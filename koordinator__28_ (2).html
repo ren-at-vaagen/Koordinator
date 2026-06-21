@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teamkoordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0d0c;--bg2:#151412;--bg3:#1c1a18;--bg4:#242220;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8e4dc;--text2:#9a9590;--text3:#5a5650;
+  --accent:#c8b89a;
+  --green:#5DCAA5;--green-bg:#0a2820;--green-b:#0F6E56;
+  --red:#E24B4A;--red-bg:rgba(226,75,74,0.08);
+  --purple:#AFA9EC;--purple-bg:rgba(175,169,236,0.1);--purple-b:#3C3489;
+  --gold:#EF9F27;--gold-bg:#2a1800;--gold-b:#854F0B;
+  --blue:#5BA8D4;--blue-bg:rgba(91,168,212,0.08);--blue-b:#2a6a96;
+  --font-d:'Fraunces',Georgia,serif;
+  --font-m:'DM Mono',monospace;
+  --radius:4px;
+}
+[data-theme="light"] {
+  --bg:#f5f4f0;--bg2:#eeede8;--bg3:#e6e4de;--bg4:#dddbd4;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1814;--text2:#4a4640;--text3:#7a7670;--accent:#7a6040;
+  --green:#0f6e50;--green-bg:#d4f0e4;--green-b:#1a9e70;
+  --red:#c0392b;--red-bg:rgba(192,57,43,0.06);
+  --purple:#4a44a0;--purple-bg:rgba(74,68,160,0.08);--purple-b:#8880cc;
+  --gold:#8a5000;--gold-bg:#fcefd4;--gold-b:#c07800;
+  --blue:#2a6a96;--blue-bg:rgba(42,106,150,0.07);--blue-b:#1a5080;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-m);font-size:14px;line-height:1.65;min-height:100vh;}
+
+/* ── SHARED ── */
+.btn{font-family:var(--font-m);font-size:12px;padding:8px 18px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn:hover{background:var(--bg3);color:var(--text);}
+.btn-primary{background:var(--green-bg);border-color:var(--green-b);color:var(--green);}
+.btn-primary:hover{background:rgba(93,202,165,0.15);}
+.btn-danger{border-color:rgba(226,75,74,0.35);color:var(--red);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-sm{font-size:11px;padding:4px 12px;}
+.form-field{margin-bottom:14px;}
+.form-field label{display:block;font-size:9px;color:var(--text3);letter-spacing:0.11em;text-transform:uppercase;margin-bottom:5px;}
+.form-input{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-m);font-size:13px;padding:8px 10px;transition:border-color 0.15s;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+.form-input::placeholder{color:var(--text3);}
+textarea.form-input{resize:vertical;min-height:72px;}
+select.form-input{cursor:pointer;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.form-actions{display:flex;gap:8px;margin-top:14px;align-items:center;}
+.info-note{font-size:11px;color:var(--text3);background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;line-height:1.6;margin-bottom:16px;}
+.empty-state{text-align:center;padding:56px 24px;color:var(--text3);font-size:13px;font-style:italic;}
+.add-form{background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:20px;margin-bottom:20px;display:none;}
+.add-form.open{display:block;}
+.sync-status{font-size:10px;color:var(--green);letter-spacing:0.06em;opacity:0;transition:opacity 0.3s;}
+.cal-nav-btn{background:none;border:0.5px solid var(--border2);border-radius:4px;color:var(--text3);cursor:pointer;font-size:16px;padding:3px 10px;transition:all 0.15s;font-family:var(--font-m);}
+.cal-nav-btn:hover{border-color:var(--text3);color:var(--text2);}
+.kal-event-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border:0.5px solid var(--border);border-radius:5px;margin-bottom:6px;background:var(--bg2);}
+.kal-event-dato{font-size:11px;color:var(--accent);min-width:110px;}
+.kal-event-type{font-size:9px;padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.kal-event-title{flex:1;font-size:13px;color:var(--text);}
+.kal-event-fag{font-size:10px;color:var(--text3);min-width:50px;}
+/* ── KALENDER GRID ── */
+#kal-grid{display:grid;grid-template-columns:28px repeat(7,1fr);gap:3px;margin-bottom:8px;}
+.full-cal-week{font-size:9px;color:var(--accent);text-align:center;padding:4px 2px;opacity:0.8;display:flex;align-items:center;justify-content:center;font-weight:500;}
+.full-cal-name{font-size:10px;color:var(--text3);text-align:center;padding:4px 0 8px;letter-spacing:0.06em;text-transform:uppercase;}
+.full-cal-cell{min-height:52px;background:var(--bg2);border:0.5px solid var(--border);border-radius:4px;padding:5px 6px;overflow:hidden;}
+.full-cal-cell.other-month{opacity:0.15;pointer-events:none;}
+.full-cal-cell.is-today{border-color:var(--accent);}
+.full-cal-cell.is-fridag{background:var(--bg);opacity:0.4;pointer-events:none;}
+.full-cal-cell.is-weekend{opacity:0.35;}
+.full-cal-date{font-size:10px;color:var(--text3);margin-bottom:3px;}
+.full-cal-cell.is-today .full-cal-date{color:var(--accent);font-weight:500;}
+.full-cal-chip{font-size:9px;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.section-title{font-family:var(--font-d);font-size:15px;font-weight:300;font-style:italic;color:var(--text2);margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+
+/* ── LAYOUT ── */
+.stage-lines{position:fixed;top:0;left:0;right:0;height:3px;display:flex;gap:2px;z-index:100;pointer-events:none;}
+.stage-line{height:100%;flex:1;background:rgba(255,255,255,0.04);}
+.stage-line:nth-child(3){flex:3;background:rgba(200,184,154,0.15);}
+.stage-line:nth-child(7){flex:2;background:rgba(255,255,255,0.06);}
+.shell{display:flex;height:100vh;}
+.sidebar{width:200px;flex-shrink:0;border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:28px 0 24px;position:fixed;top:0;bottom:0;left:0;background:#d6e8f5;z-index:50;overflow-y:auto;}
+[data-theme="light"] .sidebar{background:#d6e8f5;}
+[data-theme="dark"] .sidebar{background:#1a2a35;}
+.sidebar-logo{padding:0 20px 20px;border-bottom:0.5px solid var(--border);margin-bottom:16px;}
+.logo-name{font-family:var(--font-d);font-size:17px;font-weight:300;font-style:italic;color:#0a2a40;line-height:1.2;margin-bottom:2px;}
+[data-theme="dark"] .logo-name{color:#c8dde8;}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;}
+.nav-section{padding:0 12px;margin-bottom:4px;}
+.nav-label{font-size:9px;color:#5a8aaa;letter-spacing:0.12em;text-transform:uppercase;padding:0 8px;margin-bottom:3px;}
+[data-theme="dark"] .nav-label{color:#4a7a9a;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:4px;cursor:pointer;color:#2a5070;transition:all 0.15s;font-size:13px;}
+.nav-item:hover{background:rgba(0,0,0,0.07);color:#0a2a40;}
+.nav-item.active{background:rgba(0,0,0,0.1);color:#0a2a40;}
+[data-theme="dark"] .nav-item{color:#8ab8d4;}
+[data-theme="dark"] .nav-item:hover{background:rgba(255,255,255,0.07);color:#c8dde8;}
+[data-theme="dark"] .nav-item.active{background:rgba(255,255,255,0.1);color:#e8f4f8;}
+.nav-icon{width:14px;height:14px;opacity:0.5;flex-shrink:0;}
+.nav-item.active .nav-icon{opacity:0.8;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px 0;border-top:0.5px solid rgba(0,0,0,0.1);}
+[data-theme="dark"] .sidebar-bottom{border-top-color:rgba(255,255,255,0.08);}
+.main{margin-left:200px;flex:1;overflow-y:auto;min-height:100vh;padding-top:3px;}
+.view{display:none;padding-bottom:64px;}
+.view.active{display:block;}
+.topbar{padding:22px 32px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--bg);z-index:10;}
+.view-title{font-family:var(--font-d);font-size:22px;font-weight:300;font-style:italic;color:var(--text);}
+.content{padding:24px 32px;}
+
+/* ── HENDELSER ── */
+.arrangement-card{border:0.5px solid var(--border);border-radius:6px;margin-bottom:8px;overflow:hidden;transition:border-color 0.15s;}
+.arrangement-card:hover{border-color:var(--border2);}
+.arrangement-card.bekreftet{border-left:3px solid var(--green-b);}
+.arrangement-card.til-orientering{border-left:3px solid var(--blue);}
+.arrangement-header{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;}
+.arrangement-dato{font-size:12px;color:var(--accent);min-width:90px;font-variant-numeric:tabular-nums;}
+.arrangement-tittel{flex:1;font-size:14px;color:var(--text);}
+.arrangement-body{display:none;padding:0 16px 16px;}
+.arrangement-card.open .arrangement-body{display:block;}
+.arrangement-card.open .arrangement-header{border-bottom:0.5px solid var(--border);}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin-top:4px;width:80px;}
+.progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width 0.3s;}
+.svar-table{width:100%;border-collapse:collapse;margin-top:12px;}
+.svar-table th{font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:0 10px 7px 0;text-align:left;font-weight:400;border-bottom:0.5px solid var(--border);}
+.svar-table td{padding:8px 10px 8px 0;font-size:12px;color:var(--text2);border-bottom:0.5px solid var(--border);vertical-align:top;}
+.svar-table tr:last-child td{border-bottom:none;}
+.svar-ja{color:var(--green);}.svar-nei{color:var(--red);}.svar-pending{color:var(--text3);font-style:italic;}
+.type-badge{font-size:9px;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.type-pamelding{background:var(--purple-bg);color:var(--purple);border:0.5px solid var(--purple-b);}
+.type-info{background:var(--bg3);color:var(--text3);border:0.5px solid var(--border2);}
+.bekreftet-tag{font-size:10px;color:var(--green);border:0.5px solid var(--green-b);border-radius:10px;padding:2px 9px;}
+.ubekreftet-tag{font-size:10px;color:var(--text3);border:0.5px solid var(--border);border-radius:10px;padding:2px 9px;}
+
+/* ── ROLODEX ── */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.contact-card{border:0.5px solid var(--border);border-radius:6px;padding:14px 16px;background:var(--bg2);cursor:pointer;transition:border-color 0.15s;position:relative;}
+.contact-card:hover{border-color:var(--border2);}
+.contact-name{font-size:14px;color:var(--text);margin-bottom:3px;}
+.contact-role{font-size:11px;color:var(--accent);margin-bottom:8px;}
+.contact-detail{font-size:11px;color:var(--text3);display:flex;align-items:flex-start;gap:6px;margin-bottom:3px;}
+.contact-detail-icon{opacity:0.5;flex-shrink:0;margin-top:1px;}
+.contact-notes{font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);line-height:1.6;white-space:pre-wrap;}
+.contact-actions{display:flex;gap:6px;margin-top:10px;}
+.search-bar{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-m);font-size:13px;padding:8px 12px;margin-bottom:16px;transition:border-color 0.15s;}
+.search-bar:focus{outline:none;border-color:var(--accent);}
+.search-bar::placeholder{color:var(--text3);}
+
+/* ── BUDGET ── */
+.budget-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:24px;}
+.budget-stat{background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:14px 16px;}
+.budget-stat-label{font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.budget-stat-value{font-family:var(--font-d);font-size:22px;font-weight:300;font-style:italic;color:var(--text);}
+.budget-stat-value.positive{color:var(--green);}
+.budget-stat-value.negative{color:var(--red);}
+.post-card{border:0.5px solid var(--border);border-radius:6px;margin-bottom:8px;overflow:hidden;}
+.post-header{display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;transition:background 0.12s;}
+.post-header:hover{background:var(--bg2);}
+.post-name{flex:1;font-size:13px;color:var(--text);}
+.post-amounts{font-size:11px;color:var(--text3);text-align:right;}
+.post-saldo{font-size:13px;font-weight:500;}
+.post-saldo.ok{color:var(--green);}
+.post-saldo.over{color:var(--red);}
+.post-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:4px;width:120px;}
+.post-bar-fill{height:100%;border-radius:2px;transition:width 0.3s;}
+.post-bar-fill.ok{background:var(--green);}
+.post-bar-fill.over{background:var(--red);}
+.post-body{display:none;border-top:0.5px solid var(--border);}
+.post-card.open .post-body{display:block;}
+.trans-row{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:0.5px solid var(--border);font-size:12px;}
+.trans-row:last-child{border-bottom:none;}
+.trans-dato{color:var(--text3);min-width:80px;font-size:11px;}
+.trans-desc{flex:1;color:var(--text2);}
+.trans-amount{color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.trans-amount.income{color:var(--green);}
+.trans-add{padding:10px 16px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;background:var(--bg3);}
+
+/* ── PUBLIC ARRANGEMENT LIST ── */
+.pub-card{border:0.5px solid var(--border);border-radius:6px;margin-bottom:10px;overflow:hidden;}
+.pub-card.pub-info{border-left:3px solid var(--blue);}
+.pub-card-header{padding:14px 16px;cursor:pointer;transition:background 0.12s;}
+.pub-card-header:hover{background:var(--bg2);}
+.pub-card.open .pub-card-header{border-bottom:0.5px solid var(--border);}
+.pub-card-title{font-size:15px;color:var(--text);margin-bottom:3px;}
+.pub-card-meta{font-size:11px;color:var(--text3);}
+.pub-card-body{display:none;padding:16px;}
+.pub-card.open .pub-card-body{display:block;}
+.pub-my-svar{font-size:11px;padding:6px 10px;border-radius:4px;margin-bottom:12px;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-b);}
+
+/* ── BEKREFT MODAL ── */
+.bekreft-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;}
+.bekreft-modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:28px;width:440px;max-width:95vw;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;}
+.bekreft-modal-title{font-family:var(--font-d);font-size:18px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:20px;}
+.type-btn{font-family:var(--font-m);font-size:12px;padding:7px 16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.type-btn:hover{background:var(--bg3);}
+.type-btn.active{background:var(--green-bg);border-color:var(--green-b);color:var(--green);}
+
+/* ── TEACHER RESPONSE VIEW ── */
+.response-shell{max-width:540px;margin:0 auto;padding:32px 20px 64px;}
+.response-label{font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+.response-title{font-family:var(--font-d);font-size:28px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:4px;}
+.response-dato{font-size:14px;color:var(--accent);margin-bottom:14px;}
+.response-info{font-size:13px;color:var(--text2);line-height:1.7;padding:14px 16px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;}
+.response-frist{font-size:11px;color:var(--text3);margin-bottom:28px;}
+.radio-group{display:flex;gap:8px;margin-top:4px;}
+.radio-opt{display:flex;align-items:center;gap:7px;padding:8px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;font-size:13px;color:var(--text2);}
+.radio-opt:hover{border-color:rgba(255,255,255,0.2);}
+.radio-opt.sel-ja{border-color:var(--green-b);background:var(--green-bg);color:var(--green);}
+.radio-opt.sel-nei{border-color:rgba(226,75,74,0.4);background:var(--red-bg);color:var(--red);}
+.confirmed-block{text-align:center;padding:56px 24px;}
+.confirmed-icon{font-size:36px;margin-bottom:16px;}
+.confirmed-title{font-family:var(--font-d);font-size:22px;font-weight:300;font-style:italic;color:var(--text2);margin-bottom:8px;}
+.confirmed-sub{font-size:12px;color:var(--text3);}
+
+.ramme-bar{background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.ramme-label{font-size:9px;color:var(--text3);letter-spacing:0.11em;text-transform:uppercase;margin-bottom:3px;}
+.ramme-value{font-family:var(--font-d);font-size:20px;font-weight:300;font-style:italic;}
+.ramme-input-wrap{display:flex;align-items:center;gap:8px;}
+.ramme-input{width:130px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-m);font-size:13px;padding:6px 9px;}
+.ramme-input:focus{outline:none;border-color:var(--accent);}
+.ramme-track{flex:1;min-width:200px;}
+.ramme-track-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}
+.ramme-track-fill{height:100%;border-radius:3px;background:var(--green);transition:width 0.3s;}
+.ramme-track-fill.over{background:var(--red);}
+.tildelt-input{width:90px;background:transparent;border:none;border-bottom:0.5px solid var(--border2);color:var(--text);font-family:var(--font-m);font-size:12px;padding:2px 4px;text-align:right;}
+.tildelt-input:focus{outline:none;border-bottom-color:var(--accent);}
+
+/* ── KOMMENTARTRÅD ── */
+.thread-wrap{margin-top:16px;border-top:0.5px solid var(--border);padding-top:12px;}
+.thread-comment{margin-bottom:10px;padding:10px 12px;background:var(--bg3);border-radius:6px;border:0.5px solid var(--border);}
+.thread-comment.reply{margin-left:24px;border-left:2px solid var(--accent);background:var(--bg2);}
+.thread-meta{font-size:10px;color:var(--text3);margin-bottom:4px;display:flex;gap:8px;align-items:center;}
+.thread-meta strong{color:var(--text2);}
+.thread-text{font-size:13px;color:var(--text);line-height:1.55;}
+.thread-reply-btn{font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 0 0;font-family:var(--font-m);}
+.thread-reply-btn:hover{text-decoration:underline;}
+.thread-input-wrap{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.thread-reply-wrap{margin-top:6px;margin-left:24px;display:none;flex-direction:column;gap:6px;}
+.unread-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:6px;vertical-align:middle;flex-shrink:0;}
+.nav-flag{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:5px;vertical-align:middle;}
+.svar-flag{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-left:6px;vertical-align:middle;flex-shrink:0;}
+.nav-svar-flag{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:5px;vertical-align:middle;}
+
+/* ── EVENT BOTTOM SHEET ── */
+.ev-sheet-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.45);}
+.ev-sheet-overlay.open{display:block;}
+.ev-sheet{position:fixed;bottom:0;left:0;right:0;z-index:301;background:var(--bg2);border-radius:16px 16px 0 0;padding:24px 20px 36px;transform:translateY(100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;}
+.ev-sheet.open{transform:translateY(0);}
+.ev-sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;}
+.ev-sheet-type{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;font-weight:500;}
+.ev-sheet-title{font-family:var(--font-d);font-size:22px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:4px;}
+.ev-sheet-dato{font-size:13px;color:var(--text2);margin-bottom:12px;}
+.ev-sheet-trinn{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.ev-sheet-trinn-pill{font-size:11px;padding:3px 10px;border-radius:10px;background:var(--bg3);color:var(--text2);border:0.5px solid var(--border2);}
+.full-cal-chip{cursor:pointer;}
+.kal-event-row{cursor:pointer;}
+
+/* ── LÆRERE ── */
+.laerer-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+.laerer-row:last-child{border-bottom:none;}
+
+@media(max-width:700px){
+  .sidebar{display:none;}.main{margin-left:0;}
+  .topbar{padding:14px 16px 10px;}.content{padding:16px;}
+  .form-grid,.form-grid-3{grid-template-columns:1fr;}
+  .contact-grid{grid-template-columns:1fr;}
+  .budget-summary{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1wrDv8nNQkOeG3h1okWoY2e8uy8hr6ci0TFtAYGeSbRD1-NvAPl7JNEuFexp823ce/exec';
+const THIS_URL = 'https://ren-at-vaagen.github.io/Koordinator/';
+const WORKER_URL = 'https://shiny-butterfly-00ec.vaagendrama.workers.dev'; // kalender
+const KOORDINATOR_URL = 'https://polished-base-cbba.vaagendrama.workers.dev';   // koordinator data
+const params = new URLSearchParams(window.location.search);
+const MODE_SVAR   = params.has('svar');
+const MODE_PUBLIC = params.has('laerere') || params.get('mode')==='laerere';
+const SVAR_TYPE   = params.get('svar');
+const LAERER_ID   = params.get('laerer');
+const HENDELSE_ID = params.get('hendelseId') || params.get('arrangementId');
+</script>
+
+<div class="stage-lines">
+  <div class="stage-line"></div><div class="stage-line"></div><div class="stage-line"></div>
+  <div class="stage-line"></div><div class="stage-line"></div><div class="stage-line"></div>
+  <div class="stage-line"></div><div class="stage-line"></div><div class="stage-line"></div>
+</div>
+
+<!-- ══ TEACHER RESPONSE VIEW ══════════════════════════════════════════════════ -->
+<div id="teacher-view" style="display:none;">
+  <div class="response-shell">
+    <div style="margin-bottom:28px;">
+      <div class="response-label">Påmelding · Dramafag · Vågen vgs</div>
+      <div class="response-title" id="rv-tittel">—</div>
+      <div class="response-dato" id="rv-dato">—</div>
+      <div class="response-info" id="rv-info">—</div>
+      <div class="response-frist" id="rv-frist"></div>
+    </div>
+    <div id="nei-confirmed" style="display:none;">
+      <div class="confirmed-block">
+        <div class="confirmed-icon">✗</div>
+        <div class="confirmed-title">Registrert som nei</div>
+        <div class="confirmed-sub" id="nei-name-display">Takk for svaret.</div>
+      </div>
+    </div>
+    <div id="ja-form" style="display:none;">
+      <div class="form-field">
+        <label>Ditt navn</label>
+        <input class="form-input" id="rv-laerer" placeholder="Navn">
+      </div>
+      <div class="form-field">
+        <label>Trinn / gruppe <span style="opacity:0.5;">(velg en eller flere)</span></label>
+        <div class="radio-group" style="flex-wrap:wrap;">
+          <label class="radio-opt" id="trinn-1mdra" onclick="toggleTrinn('1mdra')">1mdra</label>
+          <label class="radio-opt" id="trinn-2mdra" onclick="toggleTrinn('2mdra')">2mdra</label>
+          <label class="radio-opt" id="trinn-3mdra" onclick="toggleTrinn('3mdra')">3mdra</label>
+          <label class="radio-opt" id="trinn-baremeg" onclick="toggleTrinn('baremeg')">Bare individer</label>
+        </div>
+      </div>
+      <div class="form-field" id="elever-field">
+        <label>Elever som blir med <span style="opacity:0.5;">(navn eller antall)</span></label>
+        <textarea class="form-input" id="rv-elever" placeholder="f.eks. Elev A, Elev B"></textarea>
+      </div>
+      <div class="form-field" id="fors-field">
+        <label>Forstyrrer dette undervisning?</label>
+        <div class="radio-group">
+          <label class="radio-opt" id="fors-nei" onclick="setForstyrrer('nei')">Nei</label>
+          <label class="radio-opt" id="fors-ja"  onclick="setForstyrrer('ja')">Ja</label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Ansvarlig lærer</label>
+        <input class="form-input" id="rv-evt-laerer" placeholder="Navn på lærer">
+      </div>
+      <div class="form-field" id="evt-laerer-field" style="display:none;">
+        <label>Berørte lærere</label>
+        <input class="form-input" id="rv-berørte-laerere" placeholder="Navn på berørte lærere">
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Avreise</label>
+          <input type="time" class="form-input" id="rv-avreise">
+        </div>
+        <div class="form-field">
+          <label>Tilbake</label>
+          <input type="time" class="form-input" id="rv-tilbake">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Notater <span style="opacity:0.5;">(valgfritt)</span></label>
+        <textarea class="form-input" id="rv-notater" placeholder="Eventuelle kommentarer..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="submitJa()">Send inn</button>
+      </div>
+    </div>
+    <div id="thank-you" style="display:none;">
+      <div class="confirmed-block">
+        <div class="confirmed-icon">✓</div>
+        <div class="confirmed-title">Takk!</div>
+        <div class="confirmed-sub">Svaret ditt er registrert.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PUBLIC TEACHER VIEW ══════════════════════════════════════════════════ -->
+<div id="public-view" style="display:none;">
+  <div style="max-width:680px;margin:0 auto;padding:28px 20px 64px;">
+    <div style="margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Dramafag · Vågen vgs</div>
+        <div style="font-family:var(--font-d);font-size:24px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:3px;">Arrangement & info</div>
+        <div style="font-size:12px;color:var(--text3);">Klikk på et kort for å melde deg på eller lese mer.</div>
+      </div>
+      <button onclick="toggleTheme()" style="flex-shrink:0;margin-top:4px;background:transparent;border:0.5px solid var(--border2);border-radius:20px;padding:5px 12px;color:var(--text3);font-family:var(--font-m);font-size:11px;cursor:pointer;">☀/🌙</button>
+    </div>
+    <div id="public-list"></div>
+  </div>
+</div>
+
+<!-- ══ COORDINATOR VIEW ═══════════════════════════════════════════════════════ -->
+<div id="coordinator-view" style="display:none;">
+<div class="shell">
+
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-name">Dramateam</div>
+      <div class="logo-sub" style="margin-top:3px;color:var(--accent);">Vågen vgs · 25/26</div>
+      <div class="logo-sub" style="margin-top:2px;">Ren Powell</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Planlegging</div>
+      <div class="nav-item" onclick="showView('arrangement',this)">
+        <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1"/><line x1="1" y1="5" x2="13" y2="5" stroke="currentColor" stroke-width="1"/><line x1="4" y1="1" x2="4" y2="3" stroke="currentColor" stroke-width="1"/><line x1="10" y1="1" x2="10" y2="3" stroke="currentColor" stroke-width="1"/></svg>
+        Arrangement
+      </div>
+      <div class="nav-item" onclick="showView('kalender',this);initKalenderTab();">
+        <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1"/><path d="M1 5h12" stroke="currentColor" stroke-width="1"/><circle cx="4" cy="8" r="1" fill="currentColor"/><circle cx="7" cy="8" r="1" fill="currentColor"/><circle cx="10" cy="8" r="1" fill="currentColor"/></svg>
+        Kalender
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Oversikt</div>
+      <div class="nav-item" onclick="showView('rolodex',this)">
+        <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1"/><line x1="1" y1="6" x2="13" y2="6" stroke="currentColor" stroke-width="1"/><line x1="4" y1="3" x2="4" y2="12" stroke="currentColor" stroke-width="0.5" stroke-dasharray="1.5 1"/></svg>
+        Kontakter
+      </div>
+      <div class="nav-item" onclick="showView('budsjett',this)">
+        <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1"/><line x1="4" y1="8" x2="4" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="5" x2="7" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="3" x2="10" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Skyggebudsjett
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Administrasjon</div>
+      <div class="nav-item" onclick="showView('laerere',this)">
+        <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1"/><path d="M2 13c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1"/></svg>
+        Lærerliste
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div id="sync-status" class="sync-status" style="margin-bottom:8px;"></div>
+      <button class="btn btn-sm" onclick="toggleTheme()">Bytt tema</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- HENDELSER -->
+    <div id="view-arrangement" class="view active">
+      <div class="topbar">
+        <div class="view-title">Arrangement & Info</div>
+        <button class="btn btn-primary" onclick="toggleAddForm('add-arrangement-form')">+ Ny arrangement</button>
+      </div>
+      <div class="content">
+        <div class="add-form" id="add-arrangement-form">
+          <div class="form-grid">
+            <div class="form-field"><label>Tittel</label><input class="form-input" id="nf-tittel" placeholder="f.eks. Danseforestilling"></div>
+            <div class="form-field"><label>Dato for arrangementn</label><input type="date" class="form-input" id="nf-dato"></div>
+            <div class="form-field"><label>Frist for svar</label><input type="date" class="form-input" id="nf-frist"></div>
+            <div class="form-field"><label>Tidspunkt <span style="opacity:0.5;">(valgfritt)</span></label><input type="time" class="form-input" id="nf-tid"></div>
+            <div class="form-field"><label>Type</label>
+              <select class="form-input" id="nf-type">
+                <option value="pamelding">Påmelding (Ja/Nei)</option>
+                <option value="info">Til orientering</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Kontaktperson</label><input class="form-input" id="nf-kontakt" placeholder="Hvem kan kontaktes?"></div>
+          </div>
+          <div class="form-field"><label>Beskrivelse / info til lærere</label><textarea class="form-input" id="nf-info" placeholder="Hva er dette, hva trenger de å vite?" style="min-height:80px;"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveArrangement(this)">Lagre</button>
+            <button class="btn" onclick="cancelArrangementForm()">Avbryt</button>
+          </div>
+        </div>
+        <div id="arrangement-list"></div>
+      </div>
+    </div>
+
+    <!-- KALENDER -->
+    <div id="view-kalender" class="view">
+      <div class="topbar">
+        <div class="view-title">Kalender</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="cal-nav-btn" onclick="kalPrev()">‹</button>
+          <span id="kal-title" style="font-family:var(--font-d);font-size:15px;font-style:italic;color:var(--text2);min-width:140px;text-align:center;"></span>
+          <button class="cal-nav-btn" onclick="kalNext()">›</button>
+        </div>
+        <div id="kal-sync" class="sync-status"></div>
+      </div>
+      <div style="padding:16px 32px 0;">
+        <div class="full-cal-grid" id="kal-grid"></div>
+      </div>
+      <div class="content" style="padding-top:16px;">
+        <div class="section-title">Alle hendelser</div>
+        <div id="kal-list"></div>
+      </div>
+    </div>
+
+    <!-- ROLODEX / KONTAKTER -->
+    <div id="view-rolodex" class="view">
+      <div class="topbar">
+        <div class="view-title">Kontakter</div>
+        <button class="btn btn-primary" onclick="toggleAddForm('add-contact-form')">+ Ny kontakt</button>
+      </div>
+      <div class="content">
+        <div class="add-form" id="add-contact-form">
+          <div class="form-grid">
+            <div class="form-field"><label>Navn</label><input class="form-input" id="c-navn" placeholder="Fornavn Etternavn"></div>
+            <div class="form-field"><label>Rolle / tittel</label><input class="form-input" id="c-rolle" placeholder="f.eks. Koreograf, Gallerist"></div>
+            <div class="form-field"><label>Telefon</label><input class="form-input" id="c-tlf" placeholder=""></div>
+            <div class="form-field"><label>E-post</label><input class="form-input" id="c-epost" placeholder=""></div>
+            <div class="form-field"><label>Organisasjon / sted</label><input class="form-input" id="c-org" placeholder="f.eks. DNS, Stavanger kommune"></div>
+            <div class="form-field"><label>Nettside / link</label><input class="form-input" id="c-url" placeholder=""></div>
+          </div>
+          <div class="form-field"><label>Notater <span style="opacity:0.5;">(økt-info, grupper, perioder, alt annet)</span></label><textarea class="form-input" id="c-notater" style="min-height:100px;" placeholder="Skriv fritt — økt-tider, grupper, perioder, personlig info..."></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveContact(this)">Lagre</button>
+            <button class="btn" onclick="toggleAddForm('add-contact-form')">Avbryt</button>
+          </div>
+        </div>
+        <input class="search-bar" id="contact-search" placeholder="Søk etter navn, rolle, organisasjon..." oninput="renderContacts()">
+        <div id="contact-grid" class="contact-grid"></div>
+      </div>
+    </div>
+
+    <!-- SKYGGEBUDSJETT -->
+    <div id="view-budsjett" class="view">
+      <div class="topbar">
+        <div class="view-title">Skyggeregnskap</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="printBudsjett()">↓ Skriv ut / PDF</button>
+          <button class="btn btn-primary" onclick="toggleAddForm('add-post-form')">+ Ny post</button>
+        </div>
+      </div>
+      <div class="content">
+        <!-- TOTAL RAMME -->
+        <div id="budget-ramme-bar"></div>
+        <!-- SUMMARY STATS -->
+        <div id="budget-summary" class="budget-summary"></div>
+        <!-- ADD POST FORM -->
+        <div class="add-form" id="add-post-form">
+          <div class="form-grid">
+            <div class="form-field"><label>Navn på post</label><input class="form-input" id="bp-navn" placeholder="f.eks. Kostymer"></div>
+            <div class="form-field"><label>Tildelt beløp (kr)</label><input type="number" class="form-input" id="bp-budsjett" placeholder="0"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveBudgetPost(this)">Legg til post</button>
+            <button class="btn" onclick="toggleAddForm('add-post-form')">Avbryt</button>
+          </div>
+        </div>
+        <div id="budget-posts"></div>
+      </div>
+    </div>
+
+    <!-- LÆRERLISTE -->
+    <div id="view-laerere" class="view">
+      <div class="topbar">
+        <div class="view-title">Lærerliste</div>
+        <button class="btn btn-primary" onclick="saveLaerere(this)">Lagre liste</button>
+      </div>
+      <div class="content">
+        <div class="info-note">Disse får påmeldings-epost. Fylles inn én gang per skoleår.</div>
+        <div id="laerere-list"></div>
+        <button class="btn btn-sm" style="margin-top:12px;" onclick="addLaererRow()">+ Legg til lærer</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+</div><!-- /coordinator-view -->
+
+<!-- EDIT CONTACT MODAL -->
+<div id="modal-contact" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:24px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;">
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:16px;">Rediger kontakt</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Navn</label><input class="form-input" id="ec-navn"></div>
+      <div class="form-field"><label>Rolle</label><input class="form-input" id="ec-rolle"></div>
+      <div class="form-field"><label>Telefon</label><input class="form-input" id="ec-tlf"></div>
+      <div class="form-field"><label>E-post</label><input class="form-input" id="ec-epost"></div>
+      <div class="form-field"><label>Organisasjon</label><input class="form-input" id="ec-org"></div>
+      <div class="form-field"><label>Nettside</label><input class="form-input" id="ec-url"></div>
+    </div>
+    <div class="form-field"><label>Notater</label><textarea class="form-input" id="ec-notater" style="min-height:120px;"></textarea></div>
+    <input type="hidden" id="ec-id">
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="updateContact()">Lagre</button>
+      <button class="btn" onclick="closeContactModal()">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLIC THREAD JS -->
+<script>
+async function loadPubThread(arrangementId) {
+  const comments = await api('getTilOrientering', { arrangementId }) || [];
+  const top = comments.filter(c => !c.foreldreId);
+  const replies = comments.filter(c => c.foreldreId);
+  const container = document.getElementById('pub-thread-comments-' + arrangementId);
+  if(!container) return;
+
+  const hasUnread = comments.some(c => c.lest === 'nei' || c.lest === false);
+  const dot = document.getElementById('pub-flag-' + arrangementId);
+  if(dot) dot.style.display = hasUnread ? 'inline-block' : 'none';
+
+  if(!comments.length) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--text3);font-style:italic;padding:4px 0;">Ingen kommentarer ennå.</div>';
+    return;
+  }
+  container.innerHTML = top.map(c => {
+    const cReplies = replies.filter(r => r.foreldreId === c.id);
+    return `<div class="thread-comment">
+      <div class="thread-meta"><strong>${c.laerer}</strong><span>${String(c.dato).substring(0,10)}</span></div>
+      <div class="thread-text">${c.notat}</div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="thread-reply-btn" onclick="togglePubReply('${c.id}')">↩ Svar</button>
+        <button class="thread-reply-btn" style="color:var(--red);" onclick="deletePubThreadComment('${c.id}','${arrangementId}')">Slett</button>
+      </div>
+      <div class="thread-reply-wrap" id="pub-reply-wrap-${c.id}">
+        <input class="form-input" id="pub-reply-navn-${c.id}" placeholder="Navn" style="font-size:12px;">
+        <textarea class="form-input" id="pub-reply-notat-${c.id}" placeholder="Svar" style="min-height:50px;font-size:12px;"></textarea>
+        <button class="btn btn-primary" style="align-self:flex-start;font-size:11px;padding:5px 14px;" onclick="sendPubThreadComment('${arrangementId}','${c.id}')">Send svar</button>
+      </div>
+      ${cReplies.map(r => `<div class="thread-comment reply">
+        <div class="thread-meta"><strong>${r.laerer}</strong><span>${String(r.dato).substring(0,10)}</span></div>
+        <div class="thread-text">${r.notat}</div>
+        <button class="thread-reply-btn" style="color:var(--red);" onclick="deletePubThreadComment('${r.id}','${arrangementId}')">Slett</button>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  // Auto-mark as read when thread is opened
+  if(hasUnread) await api('markerLest', { arrangementId });
+}
+
+function togglePubReply(commentId) {
+  const wrap = document.getElementById('pub-reply-wrap-' + commentId);
+  if(!wrap) return;
+  wrap.style.display = wrap.style.display === 'flex' ? 'none' : 'flex';
+}
+
+async function deletePubThreadComment(commentId, arrangementId) {
+  await api('deleteTilOrientering', { id: commentId });
+  await loadPubThread(arrangementId);
+}
+
+async function sendPubThreadComment(arrangementId, foreldreId) {
+  const navnId = foreldreId ? 'pub-reply-navn-' + foreldreId : 'pub-thread-navn-' + arrangementId;
+  const notatId = foreldreId ? 'pub-reply-notat-' + foreldreId : 'pub-thread-notat-' + arrangementId;
+  const navn = document.getElementById(navnId)?.value.trim();
+  const notat = document.getElementById(notatId)?.value.trim();
+  if(!navn || !notat) { alert('Fyll inn navn og kommentar'); return; }
+  await api('saveTilOrientering', { arrangementId, foreldreId: foreldreId || '', laerer: navn, notat });
+  document.getElementById(notatId).value = '';
+  if(foreldreId) document.getElementById('pub-reply-wrap-' + foreldreId).style.display = 'none';
+  await loadPubThread(arrangementId);
+}
+</script>
+
+<!-- EVENT BOTTOM SHEET -->
+<div class="ev-sheet-overlay" id="ev-overlay" onclick="closeEvSheet()"></div>
+<div class="ev-sheet" id="ev-sheet">
+  <div class="ev-sheet-handle"></div>
+  <div class="ev-sheet-type" id="ev-sheet-type"></div>
+  <div class="ev-sheet-title" id="ev-sheet-title"></div>
+  <div class="ev-sheet-dato" id="ev-sheet-dato"></div>
+  <div class="ev-sheet-trinn" id="ev-sheet-trinn"></div>
+  <div id="ev-sheet-laerere" style="margin-top:12px;font-size:12px;color:var(--text2);display:none;"></div>
+  <div id="ev-sheet-elever" style="margin-top:10px;font-size:12px;color:var(--text2);display:none;"></div>
+</div>
+
+<!-- EDIT BUDSJETTPOST MODAL -->
+<div id="modal-editpost" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:24px;width:90%;max-width:400px;">
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:16px;">Rediger postnavn</div>
+    <input type="hidden" id="ep-id">
+    <div class="form-field"><label>Navn på post</label><input class="form-input" id="ep-navn"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveEditPost(this)">Lagre</button>
+      <button class="btn" onclick="document.getElementById('modal-editpost').style.display='none'">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT TRANSAKSJON MODAL -->
+<div id="modal-edittrans" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:24px;width:90%;max-width:420px;">
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:16px;">Rediger transaksjon</div>
+    <input type="hidden" id="et-id">
+    <input type="hidden" id="et-postid">
+    <div class="form-field"><label>Beskrivelse</label><input class="form-input" id="et-desc"></div>
+    <div class="form-grid">
+      <div class="form-field"><label>Beløp (kr)</label><input type="number" class="form-input" id="et-amount"></div>
+      <div class="form-field"><label>Dato</label><input type="date" class="form-input" id="et-dato"></div>
+    </div>
+    <div class="form-field"><label>Type</label>
+      <select class="form-input" id="et-type">
+        <option value="utgift">Utgift</option>
+        <option value="inntekt">Inntekt</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveEditTrans(this)">Lagre</button>
+      <button class="btn" onclick="document.getElementById('modal-edittrans').style.display='none'">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT KALENDER HENDELSE MODAL -->
+<div id="modal-editkal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:24px;width:90%;max-width:420px;">
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:300;font-style:italic;color:var(--text);margin-bottom:16px;">Rediger kalender-hendelse</div>
+    <input type="hidden" id="ek-id">
+    <div class="form-field"><label>Tittel</label><input class="form-input" id="ek-title"></div>
+    <div class="form-field"><label>Dato</label><input type="date" class="form-input" id="ek-date"></div>
+    <div class="form-field"><label>Type</label>
+      <select class="form-input" id="ek-type">
+        <option value="forestilling">Forestilling</option>
+        <option value="aktivitet">Aktivitet</option>
+        <option value="nb">NB</option>
+        <option value="frist">Frist</option>
+        <option value="fagdag">Fagdag</option>
+        <option value="fridag">Fridag</option>
+        <option value="avtale">Avtale</option>
+      </select>
+    </div>
+    <div class="form-field"><label>Fag / trinn <span style="opacity:0.5;">(valgfritt)</span></label><input class="form-input" id="ek-fag" placeholder="f.eks. 1mdra"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveEditKal(this)">Lagre</button>
+      <button class="btn" onclick="document.getElementById('modal-editkal').style.display='none'">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- BEKREFT & KALENDER MODAL -->
+<div class="bekreft-modal-overlay" id="modal-bekreft" style="display:none;align-items:center;justify-content:center;">
+  <div class="bekreft-modal">
+    <div class="bekreft-modal-title" id="bekreft-drag-handle" style="cursor:grab;user-select:none;">Bekreft arrangement <span style="font-size:10px;color:var(--text3);margin-left:6px;">↕ dra</span></div>
+    <input type="hidden" id="bd-id">
+    <div class="form-field">
+      <label>Tittel</label>
+      <input class="form-input" id="bd-tittel">
+    </div>
+    <div class="form-field">
+      <label>Dato</label>
+      <input type="date" class="form-input" id="bd-dato">
+    </div>
+    <div class="form-field">
+      <label>Tidspunkt</label>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="flex:1;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Fra</div>
+          <input type="time" class="form-input" id="bd-tidFra">
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Til</div>
+          <input type="time" class="form-input" id="bd-tidTil">
+        </div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Type</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <button class="type-btn active" id="bd-type-forestilling" onclick="setBdType('forestilling')">Forestilling</button>
+        <button class="type-btn" id="bd-type-aktivitet" onclick="setBdType('aktivitet')">Aktivitet</button>
+        <button class="type-btn" id="bd-type-nb" onclick="setBdType('nb')">NB</button>
+        <button class="type-btn" id="bd-type-avtale" onclick="setBdType('avtale')">Avtale</button>
+      </div>
+      <input type="hidden" id="bd-type" value="forestilling">
+    </div>
+    <div class="form-field" id="bd-trinn-section">
+      <label>Trinn <span style="opacity:0.5;">(valgfritt — velg for å vise på elevkalender)</span></label>
+      <div class="radio-group" style="flex-wrap:wrap;margin-top:4px;">
+        <label class="radio-opt sel-ja" id="bd-trinn-ingen" onclick="toggleBdTrinn('ingen')">Ingen (kun frister)</label>
+        <label class="radio-opt" id="bd-trinn-1mdra" onclick="toggleBdTrinn('1mdra')">1mdra</label>
+        <label class="radio-opt" id="bd-trinn-2mdra" onclick="toggleBdTrinn('2mdra')">2mdra</label>
+        <label class="radio-opt" id="bd-trinn-3mdra" onclick="toggleBdTrinn('3mdra')">3mdra</label>
+      </div>
+    </div>
+    <div class="form-field" id="bd-laerere-section">
+      <label>Lærer(e) / deltakere <span style="opacity:0.5;">(valgfritt)</span></label>
+      <input class="form-input" id="bd-laerere" placeholder="f.eks. Kari Nordmann, Per Hansen">
+    </div>
+    <div class="form-field">
+      <label>Elever <span style="opacity:0.5;">(valgfritt — fra påmeldinger eller manuelt)</span></label>
+      <textarea class="form-input" id="bd-elever" placeholder="f.eks. Elev A, Elev B" style="min-height:56px;"></textarea>
+    </div>
+    <div class="form-actions" style="margin-top:20px;">
+      <button class="btn btn-primary" id="bd-save-btn" onclick="saveBekreft()">✓ Bekreft & send til kalender</button>
+      <button class="btn" onclick="document.getElementById('modal-bekreft').style.display='none'">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── THEME ─────────────────────────────────────────────────────────────────────
+(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('pm_theme')||'dark'); })();
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme'),n=c==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('pm_theme',n);}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+// JSONP — bypasses CORS entirely, works with Google Apps Script
+let _apiFailCount = 0;
+
+// All calls go through the Cloudflare Worker to avoid CORS issues with Google Apps Script
+async function api(action, data={}, _retry=true) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  try {
+    const params = new URLSearchParams({ action });
+    Object.entries(data).forEach(([k,v]) => params.set(k, String(v)));
+    const fullUrl = KOORDINATOR_URL + '?' + params.toString();
+
+    if(fullUrl.length > 7800) {
+      clearTimeout(timeout);
+      console.warn('[api] URL for lang:', fullUrl.length, action);
+      showSync('⚠ Data for stor til å sende', 5000);
+      return null;
+    }
+
+    const res = await fetch(fullUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    const json = await res.json();
+    if(action !== 'getAll') _apiFailCount = 0;
+    return json;
+  } catch(err) {
+    clearTimeout(timeout);
+    if(_retry && (err.name === 'AbortError' || err.name === 'TypeError')) {
+      console.warn('API timeout/feil — prøver på nytt:', err.message);
+      await new Promise(r => setTimeout(r, 2000));
+      return api(action, data, false);
+    }
+    console.warn('API feil:', err.message);
+    if(action !== 'getAll') {
+      _apiFailCount++;
+      if(_apiFailCount === 1) showSync('⚠ Lagring feilet — sjekk nett', 6000);
+    }
+    return null;
+  }
+}
+
+// ── BUTTON FEEDBACK ──────────────────────────────────────────────────────────
+function btnLoad(btn, msg='…') {
+  if(!btn) return;
+  btn._orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  btn.innerHTML = msg;
+}
+function btnDone(btn) {
+  if(!btn) return;
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.innerHTML = btn._orig || btn.innerHTML;
+}
+
+// ── CARD TOGGLE — ignore clicks on buttons ───────────────────────────────────
+function toggleCard(e, card, id, type) {
+  if(e.target.closest('button')) return;
+  card.classList.toggle('open');
+  // Load thread when a til orientering card opens
+  if(card.classList.contains('open') && type === 'info' && id) {
+    loadThread(id);
+  }
+}
+
+// ── UNDO ─────────────────────────────────────────────────────────────────────
+let _undoAction = null;
+let _undoTimer  = null;
+
+function showSync(msg, dur=2500) {
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.innerHTML = msg; el.style.opacity='1';
+  if(dur > 0) setTimeout(()=>{ el.style.opacity='0'; }, dur);
+}
+
+function showWithUndo(msg, undoFn) {
+  _undoAction = undoFn;
+  if(_undoTimer) clearTimeout(_undoTimer);
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.innerHTML = msg + ' <button onclick="triggerUndo()" style="margin-left:8px;font-family:var(--font-m);font-size:10px;padding:2px 10px;border-radius:3px;border:0.5px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;">↩ Angre</button>';
+  el.style.opacity='1';
+  _undoTimer = setTimeout(()=>{ el.style.opacity='0'; _undoAction=null; }, 6000);
+}
+
+async function triggerUndo() {
+  if(!_undoAction) return;
+  const fn = _undoAction; _undoAction = null;
+  if(_undoTimer) clearTimeout(_undoTimer);
+  showSync('Angrer...');
+  await fn();
+  showSync('Angret ✓');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const MONTHS = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+function fmtDateLang(iso){
+  if(!iso||iso==='—') return '—';
+  try {
+    const s = String(iso);
+    const parts = s.includes('T') ? s.substring(0,10).split('-') : s.split('-');
+    const [y,m,d] = parts.map(Number);
+    const dt = new Date(y, m-1, d);
+    const days = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag'];
+    return days[dt.getDay()] + ' ' + d + '. ' + MONTHS[m-1] + ' ' + y;
+  } catch(e){ return '—'; }
+}
+function fmtTime(val){
+  if(!val||val===''||val==='—') return '';
+  const s = String(val).trim();
+  // Already HH:MM or HH:MM:SS — just return first 5 chars
+  if(s.match(/^\d{1,2}:\d{2}/)) return s.substring(0,5);
+  // ISO datetime — extract time part directly without Date parsing
+  if(s.includes('T')) return s.split('T')[1].substring(0,5);
+  return '';
+}
+function fmtDate(iso){
+  if(!iso||iso==='—'||iso==='undefined'||iso==='nei'||iso==='') return '—';
+  try {
+    const s = String(iso).substring(0,10); // always take first 10 chars — never parse through Date
+    const[y,m,d]=s.split('-');
+    if(!y||!m||!d||isNaN(+d)||isNaN(+m)) return '—';
+    return `${+d}. ${MONTHS[+m-1]} ${y}`;
+  } catch(e){ return '—'; }
+}
+function fmtKr(n){return(+n||0).toLocaleString('nb-NO',{minimumFractionDigits:0})+' kr';}
+function toggleAddForm(id){document.getElementById(id).classList.toggle('open');}
+function showView(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  el.classList.add('active');
+  localStorage.setItem('pm_view', id);
+  if(id==='rolodex') renderContacts();
+  if(id==='budsjett') renderBudget();
+  if(id==='laerere') {
+    api('getLaerere').then(l=>{ ST.laerere=l||[]; renderLaerere(); });
+  }
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const ST = { arrangement:[], laerere:[], contacts:[], budgetPosts:[], transactions:[], budgetRamme:0 };
+
+async function initCoordinator() {
+  document.getElementById('coordinator-view').style.display='block';
+  // Restore last view
+  const savedView = localStorage.getItem('pm_view') || 'arrangement';
+  const navEl = document.querySelector(`.nav-item[onclick*="'${savedView}'"]`);
+  if (navEl) {
+    // special case for kalender which also calls initKalenderTab
+    if (savedView === 'kalender') { showView('kalender', navEl); initKalenderTab(); }
+    else showView(savedView, navEl);
+  }
+  await loadAll();
+}
+
+async function loadAll() {
+  const [h,l,c,bp,tr,rammeRes] = await Promise.all([
+    api('getArrangement'), api('getLaerere'),
+    api('getContacts'), api('getBudgetPosts'), api('getTransactions'),
+    api('getBudgetRamme')
+  ]);
+  ST.arrangement  = (h||[]).sort((a,b)=>(a.dato||'').localeCompare(b.dato||''));
+  ST.contacts     = c||[];
+  ST.budgetPosts  = bp||[];
+  ST.transactions = tr||[];
+  ST.budgetRamme  = +(rammeRes?.ramme || rammeRes || 0);
+  const onLaerereView = document.getElementById('view-laerere')?.classList.contains('active');
+  if (!onLaerereView) {
+    ST.laerere = l||[];
+    renderLaerere();
+  }
+  renderArrangement();
+  if(document.getElementById('view-budsjett')?.classList.contains('active')) renderBudget();
+}
+
+// ══ HENDELSER ═════════════════════════════════════════════════════════════════
+async function saveArrangement(btn) {
+  const tittel = document.getElementById('nf-tittel').value.trim();
+  const dato   = document.getElementById('nf-dato').value;
+  if(!tittel||!dato){alert('Tittel og dato er påkrevd.');return;}
+  btnLoad(btn, 'Lagrer…');
+  showSync('Lagrer arrangement...', 0);
+  const form   = document.getElementById('add-arrangement-form');
+  const editId = form.dataset.editId || null;
+  await api('saveArrangement', Object.assign({tittel, dato,
+    tid:     document.getElementById('nf-tid').value,
+    info:    document.getElementById('nf-info').value.trim(),
+    frist:   document.getElementById('nf-frist').value,
+    type:    document.getElementById('nf-type').value,
+    kontakt: document.getElementById('nf-kontakt').value.trim()
+  }, editId ? {id: editId} : {}));
+  ['nf-tittel','nf-dato','nf-frist','nf-tid','nf-info','nf-kontakt'].forEach(id=>document.getElementById(id).value='');
+  delete form.dataset.editId;
+  form.classList.remove('open');
+  const saved = await api('getArrangement');
+  const newId = (saved||[]).sort((a,b)=>b.opprettet?.localeCompare(a.opprettet||'')||0)[0]?.id;
+  btnDone(btn);
+  showWithUndo('Arrangement lagret ✓', async()=>{ if(newId) await api('deleteArrangement',{id:newId}); await loadAll(); });
+  await loadAll();
+}
+
+function cancelArrangementForm() {
+  const form = document.getElementById('add-arrangement-form');
+  delete form.dataset.editId;
+  form.classList.remove('open');
+  ['nf-tittel','nf-dato','nf-frist','nf-tid','nf-info','nf-kontakt'].forEach(id=>document.getElementById(id).value='');
+}
+
+function editArrangement(id) {
+  const h = ST.arrangement.find(x => x.id === id);
+  if (!h) return;
+  // Pre-fill the form
+  document.getElementById('nf-tittel').value = h.tittel || '';
+  document.getElementById('nf-tid').value    = fmtTime(h.tid) || '';
+  // frist may be ISO — input[type=date] needs YYYY-MM-DD
+  const fristVal = h.frist ? String(h.frist).includes('T') ? String(h.frist).substring(0,10) : String(h.frist) : '';
+  document.getElementById('nf-frist').value  = fristVal;
+  // dato same
+  const datoVal = h.dato ? String(h.dato).includes('T') ? String(h.dato).substring(0,10) : String(h.dato) : '';
+  document.getElementById('nf-dato').value   = datoVal;
+  document.getElementById('nf-type').value   = h.type || 'pamelding';
+  document.getElementById('nf-info').value   = h.info || '';
+  document.getElementById('nf-kontakt').value= h.kontakt || '';
+  // Store the id so saveArrangement knows this is an edit
+  document.getElementById('add-arrangement-form').dataset.editId = id;
+  // Open the form and scroll to it
+  document.getElementById('add-arrangement-form').classList.add('open');
+  document.getElementById('add-arrangement-form').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function renderArrangement() {
+  const list = document.getElementById('arrangement-list');
+  if(!ST.arrangement.length){list.innerHTML='<div class="empty-state">Ingen arrangement ennå.</div>';return;}
+  const total = ST.laerere.length;
+  const rmap  = {};
+  await Promise.all(ST.arrangement.map(async h=>{
+    if(h.type==='pamelding') rmap[h.id]=await api('getResponses',{hendelseId:h.id});
+  }));
+  list.innerHTML = ST.arrangement.map(h=>{
+    const svar=rmap[h.id]||[], svart=svar.length, ja=svar.filter(s=>s.svar==='ja').length;
+    const pct=total>0?(svart/total)*100:0, bek=h.bekreftet==='ja';
+    const svarRows = h.type==='pamelding' ? (()=>{
+      const names=new Set(svar.map(s=>s.laerer));
+      const pending=ST.laerere.filter(l=>!names.has(l.navn));
+      return`<div style="font-size:11px;color:var(--text3);margin:12px 0 8px;">${svart}/${total} svart · ${ja} ja</div>
+      <table class="svar-table"><thead><tr><th>Lærer</th><th>Svar</th><th>Trinn</th><th>Elever</th><th>Forstyrrer</th><th>Ansvarlig lærer</th><th>Berørte lærere</th><th>Avreise</th><th>Tilbake</th><th>Notater</th><th></th></tr></thead><tbody>
+      ${svar.sort((a,b)=>a.svar==='ja'?-1:1).map(s=>`<tr>
+        <td>${s.laerer}</td><td class="${s.svar==='ja'?'svar-ja':'svar-nei'}">${s.svar==='ja'?'✓ Ja':'✗ Nei'}</td>
+        <td style="color:var(--accent);">${s.trinn||'—'}</td>
+        <td>${s.elever||'—'}</td><td>${s.forstyrrer==='ja'?'Ja':'Nei'}</td>
+        <td>${s.evtLaerer||'—'}</td>
+        <td style="color:var(--text3);font-size:11px;">${s.berørteLaerere||'—'}</td>
+        <td style="color:var(--text3);font-size:11px;">${fmtTime(s.avreise)||'—'}</td>
+        <td style="color:var(--text3);font-size:11px;">${fmtTime(s.tilbake)||'—'}</td>
+        <td style="color:var(--text3);font-size:11px;">${s.notater||'—'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteResponse(&quot;${s.id}&quot;,&quot;${h.id}&quot;,this)">×</button></td></tr>`).join('')}
+      ${pending.map(l=>`<tr><td>${l.navn}</td><td class="svar-pending">○ Ikke svart</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>`).join('')}
+      </tbody></table>`;
+    })():'';
+    const jaUrl=THIS_URL+'?svar=ja&hendelseId='+h.id+'&laerer=NAVN';
+    return`<div class="arrangement-card${bek?' bekreftet':''} ${h.type==='info'?'til-orientering':''}" id="hc-${h.id}">
+      <div class="arrangement-header" data-id="${h.id}" onclick="toggleCard(event, this.closest('.arrangement-card'), '${h.id}', '${h.type}')">
+        <div class="arrangement-dato">${fmtDate(h.dato)}</div>
+        <div style="flex:1;">
+          <div class="arrangement-tittel">${h.tittel}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+            <span class="type-badge ${h.type==='pamelding'?'type-pamelding':'type-info'}">${h.type==='pamelding'?'Påmelding':'Til orientering'}</span>
+          ${h.type==='info'?`<span class="unread-dot" id="flag-${h.id}" style="display:none;" title="Ny diskusjon"></span>`:''}
+            ${h.type!=='info'?`<span class="${bek?'bekreftet-tag':'ubekreftet-tag'}">${bek?'✓ Bekreftet':'Ubekreftet'}</span>`:''}
+            ${bek?`<span class="svar-flag" id="svar-flag-${h.id}" style="display:none;" title="Nytt svar — oppdater bekreftelsen"></span>`:''}
+          </div>
+        </div>
+        ${h.type==='pamelding'?`<div style="text-align:right;">
+          <div style="font-size:11px;color:var(--text3);">${svart}/${total}</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>`:''}
+        <svg style="width:12px;height:12px;opacity:0.25;flex-shrink:0;" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="arrangement-body">
+        ${h.info?`<div style="font-size:13px;color:var(--text2);margin-top:14px;line-height:1.65;">${h.info}</div>`:''}
+        <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
+          ${h.tid&&fmtTime(h.tid)?`<div style="font-size:11px;color:var(--accent);">🕐 ${fmtTime(h.tid)}</div>`:''}
+          ${h.type!=='info'&&h.frist?`<div style="font-size:11px;color:var(--text3);">Frist: ${fmtDate(h.frist)}</div>`:''}
+          ${h.kontakt?`<div style="font-size:11px;color:var(--text3);">Kontakt: ${h.kontakt}</div>`:''}
+        </div>
+        ${svarRows}
+        ${h.type==='info'?`<div class="thread-wrap" id="thread-${h.id}">
+          <div id="thread-comments-${h.id}"><div style="font-size:11px;color:var(--text3);">Laster diskusjon…</div></div>
+          <div class="thread-input-wrap">
+            <input class="form-input" id="thread-navn-${h.id}" placeholder="Navn" style="font-size:12px;">
+            <textarea class="form-input" id="thread-notat-${h.id}" placeholder="Kommentar" style="min-height:60px;font-size:12px;"></textarea>
+            <button class="btn btn-primary" style="align-self:flex-start;" onclick="sendThreadComment('${h.id}',null)">Send</button>
+          </div>
+        </div>`:''}
+        <div class="form-actions" style="margin-top:14px;flex-wrap:wrap;">
+          ${h.type==='pamelding'?`<button class="btn btn-primary" onclick="sendEmails('${h.id}', this)">${h.emailSent&&h.emailSent!=='nei'?'↻ Send på nytt':'✉ Send påmelding'}</button>`:''}
+          ${h.type!=='info'?`<button class="btn ${bek?'':'btn-primary'} bek-btn" data-id="${h.id}" data-bek="${bek}">${bek?'Fjern bekreftelse':'✓ Bekreft'}</button>`:''}
+          <button class="btn" onclick="editArrangement('${h.id}')">Rediger</button>
+          <button class="btn btn-danger" onclick="deleteArrangement('${h.id}',this)">Slett</button>
+          ${h.type==='info'?`<button class="btn" onclick="clearThreadFlag('${h.id}')" style="font-size:11px;">✓ Fjern flagg</button>`:''}
+          ${bek?`<button class="btn" id="clear-svar-flag-${h.id}" onclick="clearSvarFlag('${h.id}')" style="font-size:11px;display:none;">✓ Fjern svar-flagg</button>`:''}
+          ${h.emailSent&&h.emailSent!=='nei'?`<span style="font-size:10px;color:var(--text3);">Sendt: ${h.emailSent}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // Restore svar flags from arrangement data now that DOM elements exist
+  ST.arrangement.forEach(h => {
+    if (h.svarFlag === 'ja') setSvarFlag(h.id);
+  });
+}
+
+async function toggleBekreft(id, val, btn) {
+  btnLoad(btn, val ? '✓ Bekrefter…' : 'Fjerner…');
+  showSync(val ? 'Bekrefter…' : 'Fjerner bekreftelse…', 0);
+  await api('bekreft', {id, bekreftet: String(val)});
+  // If removing bekreftelse — also delete from Dramaplanner calendar
+  if (!val) {
+    const h = ST.arrangement.find(x => x.id === id);
+    const kalTrinn = h && h.kalTrinn ? h.kalTrinn.split(',').filter(Boolean) : [];
+    const targets = kalTrinn.length ? kalTrinn : [''];
+    for (const fag of targets) {
+      const eventId = id + (fag ? '-' + fag : '');
+      const payload = { action: 'deleteEvent', data: { id: eventId } };
+      await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)));
+    }
+  }
+  showSync(val ? '✓ Bekreftet' : 'Bekreftelse fjernet');
+  await loadAll();
+}
+
+function openBekreftDialog(id, btn) {
+  const h = ST.arrangement.find(x => x.id === id);
+  if (!h) return;
+  document.getElementById('bd-id').value     = id;
+  document.getElementById('bd-tittel').value = h.tittel || '';
+  document.getElementById('bd-dato').value   = h.dato || '';
+  document.getElementById('bd-type').value   = 'aktivitet';
+  // Reset trinn
+  ['bd-trinn-ingen','bd-trinn-1mdra','bd-trinn-2mdra','bd-trinn-3mdra'].forEach(tid => {
+    const el = document.getElementById(tid);
+    if (el) el.classList.remove('sel-ja');
+  });
+  document.getElementById('bd-trinn-ingen').classList.add('sel-ja');
+  window._bdTrinn = new Set();
+  // Pre-fill laerere and elever from existing calendar event if available
+  const existingEvent = _kalEvents.find(e => e.id === id || e.id.startsWith(id + '-'));
+  document.getElementById('bd-laerere').value = existingEvent ? (existingEvent.laerere || '') : '';
+  document.getElementById('bd-tidFra').value = existingEvent ? (existingEvent.tidFra || '') : '';
+  document.getElementById('bd-tidTil').value = existingEvent ? (existingEvent.tidTil || '') : '';
+  if (existingEvent && existingEvent.elever) {
+    document.getElementById('bd-elever').value = existingEvent.elever;
+  } else {
+    // Compile from ja-svar responses
+    api('getResponses', { hendelseId: id }).then(svar => {
+      const ja = (svar || []).filter(s => s.svar === 'ja' && !s.trinn?.includes('baremeg'));
+      document.getElementById('bd-elever').value = ja.map(s => s.elever).filter(Boolean).join(', ');
+    });
+  }
+  // Change title and button if already bekreftet
+  const isEdit = h.bekreftet === 'ja';
+  document.getElementById('bekreft-drag-handle').innerHTML = isEdit
+    ? 'Rediger bekreftelse <span style="font-size:10px;color:var(--text3);margin-left:6px;">↕ dra</span>'
+    : 'Bekreft arrangement <span style="font-size:10px;color:var(--text3);margin-left:6px;">↕ dra</span>';
+  document.getElementById('bd-save-btn').textContent = isEdit ? 'Lagre endringer' : '✓ Bekreft & send til kalender';
+  // Pre-fill trinn from existing calendar event if editing
+  if (isEdit && existingEvent && existingEvent.fag) {
+    const existingTrinn = String(existingEvent.fag).split(',').map(t => t.trim()).filter(Boolean);
+    existingTrinn.forEach(t => {
+      if (['1mdra','2mdra','3mdra'].includes(t)) {
+        window._bdTrinn.add(t);
+        const el = document.getElementById('bd-trinn-' + t);
+        if (el) el.classList.add('sel-ja');
+      }
+    });
+    if (window._bdTrinn.size > 0) {
+      document.getElementById('bd-trinn-ingen').classList.remove('sel-ja');
+    }
+  }
+  // Also pre-fill type from existing event
+  if (isEdit && existingEvent && existingEvent.type) {
+    setBdType(existingEvent.type);
+  }
+  // Clear svar flag when opening bekreft dialog
+  clearSvarFlag(id);
+  // Reset position to centre
+  const modal = document.querySelector('.bekreft-modal');
+  if (modal) { modal.style.left = '50%'; modal.style.top = '50%'; modal.style.transform = 'translate(-50%,-50%)'; }
+  document.getElementById('modal-bekreft').style.display = 'block';
+}
+
+function setBdType(v) {
+  document.getElementById('bd-type').value = v;
+  ['forestilling','aktivitet','nb','avtale'].forEach(t => {
+    const el = document.getElementById('bd-type-' + t);
+    if (el) el.className = 'type-btn' + (t === v ? ' active' : '');
+  });
+  // Hide trinn selection for avtale — irrelevant and a safeguard
+  const trinnSection = document.getElementById('bd-trinn-section');
+  if (trinnSection) trinnSection.style.display = v === 'avtale' ? 'none' : '';
+}
+
+function toggleBdTrinn(v) {
+  const t = window._bdTrinn;
+  if (v === 'ingen') {
+    t.clear();
+  } else {
+    if (t.has(v)) t.delete(v);
+    else t.add(v);
+  }
+  ['ingen','1mdra','2mdra','3mdra'].forEach(tr => {
+    const el = document.getElementById('bd-trinn-' + tr);
+    if (!el) return;
+    const active = tr === 'ingen' ? t.size === 0 : t.has(tr);
+    el.className = 'radio-opt' + (active ? ' sel-ja' : '');
+  });
+}
+
+async function saveBekreft() {
+  const id     = document.getElementById('bd-id').value;
+  const tittel = document.getElementById('bd-tittel').value.trim();
+  const dato   = document.getElementById('bd-dato').value;
+  const type   = document.getElementById('bd-type').value;
+  const trinn  = [...(window._bdTrinn || [])];
+  const btn    = document.getElementById('bd-save-btn');
+
+  btnLoad(btn, 'Bekrefter…');
+  showSync('Bekrefter og sender til kalender…', 0);
+
+  // 1. Delete any existing calendar events for this arrangement
+  // Fetch fresh from worker to ensure we catch all trinn variants
+  try {
+    const workerAll = await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify({ action: 'getAll', data: {} })));
+    const workerJson = await workerAll.json();
+    if (workerJson.ok && workerJson.data && workerJson.data.events) {
+      const toDelete = workerJson.data.events.filter(e => String(e.id) === String(id) || String(e.id).startsWith(id + '-'));
+      for (const old of toDelete) {
+        await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify({ action: 'deleteEvent', data: { id: old.id } })));
+      }
+    }
+  } catch(e) {
+    // fallback to local cache
+    const existingForDelete = _kalEvents.filter(e => e.id === id || e.id.startsWith(id + '-'));
+    for (const old of existingForDelete) {
+      await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify({ action: 'deleteEvent', data: { id: old.id } })));
+    }
+  }
+
+  // 2. Mark as bekreftet in Koordinator, store which trinn were used
+  const kalTrinnStr = trinn.join(',');
+  await api('bekreft', {id, bekreftet: 'true', kalTrinn: kalTrinnStr, tidFra, tidTil, laerere, elever});
+
+  // 2. Push to Dramaplanner via Cloudflare Worker
+  // If no trinn selected — one event with empty fag (frister only)
+  // If trinn selected — one event per trinn with that trinn as fag
+  const laerere = document.getElementById('bd-laerere').value.trim();
+  const elever  = document.getElementById('bd-elever').value.trim();
+  const tidFra  = document.getElementById('bd-tidFra').value.trim();
+  const tidTil  = document.getElementById('bd-tidTil').value.trim();
+  const targets = trinn.length ? trinn : [''];
+  for (const fag of targets) {
+    const eventId = id + (fag ? '-' + fag : '');
+    const payload = {
+      action: 'saveEvent',
+      data: { id: eventId, date: dato, type, title: tittel, fag, laerere, elever, tidFra, tidTil }
+    };
+    await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)));
+    // Save laerere in koordinator's own backend
+    if(laerere) await api('saveKalLaerere', { eventId, laerere });
+  }
+
+  document.getElementById('modal-bekreft').style.display = 'none';
+  btnDone(btn);
+  const wasEdit = existingForDelete.length > 0;
+  showSync(wasEdit ? '✓ Bekreftelse oppdatert' : '✓ Bekreftet og lagt til i kalender');
+  await loadAll();
+  await loadKalEvents();
+}
+async function deleteArrangement(id, btn){
+  if(!confirm('Slette dette arrangementet?')) return;
+  const snap = ST.arrangement.find(x=>x.id===id);
+  if(!snap) return;
+  btnLoad(btn, 'Sletter…');
+  showSync('Sletter…', 0);
+  await api('deleteArrangement',{id});
+  await loadAll();
+  showWithUndo('Slettet ✓', async()=>{ await api('saveArrangement',snap); await loadAll(); });
+}
+async function deleteResponse(responseId, hendelseId, btn) {
+  if(!confirm('Slette dette svaret?')) return;
+  btnLoad(btn, '…');
+  await api('deleteResponse', {id: responseId});
+  // Refresh just this card's responses
+  const responses = await api('getResponses', {hendelseId});
+  const idx = ST.arrangement.findIndex(x => x.id === hendelseId);
+  if(idx >= 0) {
+    // Re-render by reloading all
+    await loadAll();
+  }
+  showSync('Svar slettet ✓');
+}
+
+async function sendEmails(arrangementId, btn) {
+  const h = ST.arrangement.find(x => x.id === arrangementId);
+  if (!h) return;
+  const laerere = ST.laerere.filter(l => l.epost);
+  if (!laerere.length) { alert('Ingen lærere med e-postadresse. Legg til lærere først.'); return; }
+  if (!confirm('Send påmelding til alle ' + laerere.length + ' lærere?')) return;
+
+  btnLoad(btn, 'Sender…');
+  showSync('Sender epost...', 0);
+
+  const r = await api('sendEmails', {
+    hendelseId: arrangementId,
+    tittel: h.tittel,
+    dato: fmtDate(h.dato),
+    info: h.info || '',
+    frist: h.frist ? fmtDate(h.frist) : '',
+    baseUrl: THIS_URL
+  });
+
+  btnDone(btn);
+  if (r && r.sent) {
+    showSync('Sendt til ' + r.sent.length + ' lærere ✓');
+  } else {
+    showSync('Noe gikk galt — sjekk Apps Script-loggen');
+  }
+  await loadAll();
+}
+
+// ══ ROLODEX ═══════════════════════════════════════════════════════════════════
+async function saveContact(btn) {
+  const navn=document.getElementById('c-navn').value.trim();
+  if(!navn){alert('Navn er påkrevd.');return;}
+  btnLoad(btn, 'Lagrer…');
+  showSync('Lagrer kontakt...', 0);
+  await api('saveContact',{
+    navn, rolle:document.getElementById('c-rolle').value.trim(),
+    tlf:document.getElementById('c-tlf').value.trim(),
+    epost:document.getElementById('c-epost').value.trim(),
+    org:document.getElementById('c-org').value.trim(),
+    url:document.getElementById('c-url').value.trim(),
+    notater:document.getElementById('c-notater').value.trim()
+  });
+  ['c-navn','c-rolle','c-tlf','c-epost','c-org','c-url','c-notater'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-contact-form').classList.remove('open');
+  btnDone(btn);
+  const cAll=await api('getContacts'); ST.contacts=cAll||[]; renderContacts();
+  const newCId=ST.contacts[ST.contacts.length-1]?.id;
+  showWithUndo('Lagret', async()=>{ if(newCId) await api('deleteContact',{id:newCId}); const c2=await api('getContacts'); ST.contacts=c2||[]; renderContacts(); });
+}
+
+function renderContacts() {
+  const q=(document.getElementById('contact-search')?.value||'').toLowerCase();
+  const filtered=ST.contacts.filter(c=>[c.navn,c.rolle,c.org,c.notater].join(' ').toLowerCase().includes(q));
+  const grid=document.getElementById('contact-grid');
+  if(!filtered.length){grid.innerHTML=`<div class="empty-state">${q?'Ingen treff.':'Ingen kontakter ennå.'}</div>`;return;}
+  grid.innerHTML=filtered.map(c=>`
+    <div class="contact-card">
+      <div class="contact-name">${c.navn}</div>
+      ${c.rolle?`<div class="contact-role">${c.rolle}</div>`:''}
+      ${c.org?`<div class="contact-detail"><span class="contact-detail-icon">🏛</span>${c.org}</div>`:''}
+      ${c.tlf?`<div class="contact-detail"><span class="contact-detail-icon">📞</span><a href="tel:${c.tlf}" style="color:var(--text3);text-decoration:none;">${c.tlf}</a></div>`:''}
+      ${c.epost?`<div class="contact-detail"><span class="contact-detail-icon">✉</span><a href="mailto:${c.epost}" style="color:var(--text3);text-decoration:none;">${c.epost}</a></div>`:''}
+      ${c.url?`<div class="contact-detail"><span class="contact-detail-icon">🔗</span><a href="${c.url}" target="_blank" style="color:var(--accent);text-decoration:none;">${c.url.replace(/^https?:\/\//,'')}</a></div>`:''}
+      ${c.notater?`<div class="contact-notes">${c.notater}</div>`:''}
+      <div class="contact-actions">
+        <button class="btn btn-sm" onclick="openEditContact('${c.id}')">Rediger</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteContact('${c.id}')">Slett</button>
+      </div>
+    </div>`).join('');
+}
+
+function openEditContact(id) {
+  const c=ST.contacts.find(x=>x.id===id);if(!c)return;
+  ['navn','rolle','tlf','epost','org','url','notater'].forEach(f=>document.getElementById('ec-'+f).value=c[f]||'');
+  document.getElementById('ec-id').value=id;
+  document.getElementById('modal-contact').style.display='flex';
+}
+function closeContactModal(){document.getElementById('modal-contact').style.display='none';}
+async function updateContact(){
+  const id=document.getElementById('ec-id').value;
+  const btn=document.querySelector('#modal-contact .btn-primary');
+  btnLoad(btn,'Lagrer…');
+  showSync('Lagrer...', 0);
+  await api('saveContact',{id,
+    navn:document.getElementById('ec-navn').value.trim(),
+    rolle:document.getElementById('ec-rolle').value.trim(),
+    tlf:document.getElementById('ec-tlf').value.trim(),
+    epost:document.getElementById('ec-epost').value.trim(),
+    org:document.getElementById('ec-org').value.trim(),
+    url:document.getElementById('ec-url').value.trim(),
+    notater:document.getElementById('ec-notater').value.trim()
+  });
+  btnDone(btn); closeContactModal(); showSync('Lagret ✓');
+  const c=await api('getContacts'); ST.contacts=c||[]; renderContacts();
+}
+async function deleteContact(id){
+  if(!confirm('Slette kontakt?'))return;
+  await api('deleteContact',{id}); showSync('Slettet');
+  const c=await api('getContacts'); ST.contacts=c||[]; renderContacts();
+}
+
+// ══ SKYGGEREGNSKAP ════════════════════════════════════════════════════════════
+// ST.budgetRamme = total available (number, stored via api('saveBudgetRamme'))
+// ST.budgetPosts[].budsjett = tildelt amount for that post (freely editable)
+// ST.transactions = actual spending entries
+
+async function saveBudgetPost(btn){
+  const navn=document.getElementById('bp-navn').value.trim();
+  const budsjett=document.getElementById('bp-budsjett').value;
+  if(!navn)return;
+  btnLoad(btn,'Lagrer…');
+  await api('saveBudgetPost',{navn,budsjett:budsjett||0});
+  document.getElementById('bp-navn').value='';
+  document.getElementById('bp-budsjett').value='';
+  document.getElementById('add-post-form').classList.remove('open');
+  btnDone(btn);
+  showSync('Post lagt til ✓');
+  const [bp,tr]=await Promise.all([api('getBudgetPosts'),api('getTransactions')]);
+  ST.budgetPosts=bp||[]; ST.transactions=tr||[]; renderBudget();
+}
+
+async function saveRamme(){
+  const val = +document.getElementById('ramme-input').value || 0;
+  ST.budgetRamme = val;
+  await api('saveBudgetRamme', {ramme: val});
+  showSync('Ramme lagret ✓');
+  renderBudget();
+}
+
+async function saveTildelt(postId){
+  const val = +document.getElementById('tildelt-'+postId)?.value || 0;
+  await api('saveBudgetPost', {id: postId, budsjett: val,
+    navn: ST.budgetPosts.find(p=>p.id===postId)?.navn || ''});
+  const bp = await api('getBudgetPosts');
+  ST.budgetPosts = bp||[];
+  renderBudget();
+  showSync('Tildeling oppdatert ✓');
+}
+
+async function addTransaction(postId){
+  const desc=document.getElementById('td-desc-'+postId)?.value.trim();
+  const amount=document.getElementById('td-amount-'+postId)?.value;
+  const dato=document.getElementById('td-dato-'+postId)?.value;
+  const type=document.getElementById('td-type-'+postId)?.value;
+  if(!desc||!amount)return;
+  showSync('Lagrer...');
+  await api('saveTransaction',{postId,desc,amount,dato:dato||new Date().toISOString().slice(0,10),type:type||'utgift'});
+  document.getElementById('td-desc-'+postId).value='';
+  document.getElementById('td-amount-'+postId).value='';
+  showSync('Lagret');
+  const [bp,tr]=await Promise.all([api('getBudgetPosts'),api('getTransactions')]);
+  ST.budgetPosts=bp||[]; ST.transactions=tr||[]; renderBudget();
+}
+
+async function deleteBudgetPost(id){
+  if(!confirm('Slette post og alle transaksjoner?'))return;
+  await api('deleteBudgetPost',{id});
+  const [bp,tr]=await Promise.all([api('getBudgetPosts'),api('getTransactions')]);
+  ST.budgetPosts=bp||[]; ST.transactions=tr||[]; renderBudget();
+  showSync('Slettet');
+}
+
+async function deleteTransaction(id,postId){
+  const snap=ST.transactions.find(x=>x.id===id);
+  await api('deleteTransaction',{id});
+  const [bp,tr]=await Promise.all([api('getBudgetPosts'),api('getTransactions')]);
+  ST.budgetPosts=bp||[]; ST.transactions=tr||[]; renderBudget();
+  showWithUndo('Slettet', async()=>{ if(snap) await api('saveTransaction',snap); const [bp2,tr2]=await Promise.all([api('getBudgetPosts'),api('getTransactions')]); ST.budgetPosts=bp2||[]; ST.transactions=tr2||[]; renderBudget(); });
+}
+
+function renderBudget(){
+  const posts=ST.budgetPosts, trans=ST.transactions;
+  const ramme = +ST.budgetRamme || 0;
+
+  const postData=posts.map(p=>{
+    const pt=trans.filter(t=>t.postId===p.id);
+    const brukt=pt.filter(t=>t.type!=='inntekt').reduce((s,t)=>s+(+t.amount||0),0);
+    const inntekt=pt.filter(t=>t.type==='inntekt').reduce((s,t)=>s+(+t.amount||0),0);
+    const tildelt=+p.budsjett||0;
+    return{...p, brukt, inntekt, tildelt, igjen: tildelt - brukt + inntekt, trans:pt};
+  });
+
+  const totalTildelt = postData.reduce((s,p)=>s+p.tildelt,0);
+  const totalBrukt   = postData.reduce((s,p)=>s+p.brukt,0);
+  const totalInntekt = postData.reduce((s,p)=>s+p.inntekt,0);
+  const ikkefordelt  = ramme - totalTildelt;
+  const pctTildelt   = ramme > 0 ? Math.min((totalTildelt/ramme)*100,100) : 0;
+
+  // Ramme bar
+  document.getElementById('budget-ramme-bar').innerHTML=`
+    <div class="ramme-bar">
+      <div>
+        <div class="ramme-label">Total ramme</div>
+        <div class="ramme-input-wrap">
+          <input type="number" class="ramme-input" id="ramme-input" value="${ramme||''}" placeholder="0" onblur="saveRamme()">
+          <span style="font-size:11px;color:var(--text3);">kr</span>
+        </div>
+      </div>
+      <div class="ramme-track" style="flex:1;min-width:180px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);">
+          <span>Fordelt: ${fmtKr(totalTildelt)}</span>
+          <span style="color:${ikkefordelt<0?'var(--red)':'var(--green)'};">Ledig: ${fmtKr(ikkefordelt)}</span>
+        </div>
+        <div class="ramme-track-bar"><div class="ramme-track-fill${ikkefordelt<0?' over':''}" style="width:${pctTildelt}%"></div></div>
+      </div>
+      <div style="text-align:right;">
+        <div class="ramme-label">Faktisk brukt</div>
+        <div class="ramme-value" style="color:var(--text2);">${fmtKr(totalBrukt)}${totalInntekt?` <span style="font-size:13px;color:var(--green);">+${fmtKr(totalInntekt)}</span>`:''}</div>
+      </div>
+    </div>`;
+
+  // Summary stats
+  document.getElementById('budget-summary').innerHTML=`
+    <div class="budget-stat"><div class="budget-stat-label">Ikke fordelt</div><div class="budget-stat-value ${ikkefordelt>=0?'positive':'negative'}">${fmtKr(ikkefordelt)}</div></div>
+    <div class="budget-stat"><div class="budget-stat-label">Totalt tildelt</div><div class="budget-stat-value">${fmtKr(totalTildelt)}</div></div>
+    <div class="budget-stat"><div class="budget-stat-label">Totalt brukt</div><div class="budget-stat-value negative">${fmtKr(totalBrukt)}</div></div>
+    ${totalInntekt?`<div class="budget-stat"><div class="budget-stat-label">Inntekter</div><div class="budget-stat-value positive">${fmtKr(totalInntekt)}</div></div>`:''}`;
+
+  if(!posts.length){document.getElementById('budget-posts').innerHTML='<div class="empty-state">Ingen poster ennå. Trykk «+ Ny post» for å starte.</div>';return;}
+
+  document.getElementById('budget-posts').innerHTML=postData.map(p=>{
+    const pct=p.tildelt>0?Math.min((p.brukt/p.tildelt)*100,100):0;
+    const over=p.igjen<0;
+    return`<div class="post-card" id="pc-${p.id}">
+      <div class="post-header" onclick="document.getElementById('pc-${p.id}').classList.toggle('open')">
+        <div class="post-name">${p.navn}</div>
+        <div style="text-align:right;display:flex;align-items:center;gap:16px;">
+          <div style="text-align:right;">
+            <div class="post-amounts" style="display:flex;align-items:center;gap:6px;">
+              <span style="color:var(--text3);font-size:10px;">Tildelt:</span>
+              <input type="number" class="tildelt-input" id="tildelt-${p.id}" value="${p.tildelt||0}"
+                onclick="event.stopPropagation()"
+                onblur="saveTildelt('${p.id}')">
+              <span style="color:var(--text3);font-size:10px;">kr &nbsp;·&nbsp; Brukt: ${fmtKr(p.brukt)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:4px;">
+              <div class="post-bar-wrap" style="width:100px;"><div class="post-bar-fill ${over?'over':'ok'}" style="width:${pct}%"></div></div>
+              <div class="post-saldo ${over?'over':'ok'}">${fmtKr(p.igjen)}</div>
+            </div>
+          </div>
+        </div>
+        <svg style="width:12px;height:12px;opacity:0.25;flex-shrink:0;" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="post-body">
+        ${p.trans.length?p.trans.sort((a,b)=>(b.dato||'').localeCompare(a.dato||'')).map(t=>`
+          <div class="trans-row">
+            <div class="trans-dato">${fmtDate(t.dato)}</div>
+            <div class="trans-desc">${t.desc}</div>
+            <div class="trans-amount ${t.type==='inntekt'?'income':''}">${t.type==='inntekt'?'+':'−'} ${fmtKr(t.amount)}</div>
+            <button class="btn btn-sm" style="padding:2px 8px;" onclick="openEditTrans('${t.id}','${p.id}')">✎</button>
+            <button class="btn btn-sm btn-danger" style="padding:2px 8px;" onclick="deleteTransaction('${t.id}','${p.id}')">×</button>
+          </div>`).join(''):'<div style="padding:10px 16px;font-size:12px;color:var(--text3);font-style:italic;">Ingen utgifter registrert ennå.</div>'}
+        <div class="trans-add">
+          <div style="flex:2;min-width:140px;">
+            <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Beskrivelse</div>
+            <input class="form-input" id="td-desc-${p.id}" placeholder="f.eks. Stoff til kostymer">
+          </div>
+          <div style="flex:1;min-width:90px;">
+            <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Beløp (kr)</div>
+            <input type="number" class="form-input" id="td-amount-${p.id}" placeholder="0">
+          </div>
+          <div style="flex:1;min-width:110px;">
+            <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Dato</div>
+            <input type="date" class="form-input" id="td-dato-${p.id}" value="${new Date().toISOString().slice(0,10)}">
+          </div>
+          <div style="flex:1;min-width:90px;">
+            <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Type</div>
+            <select class="form-input" id="td-type-${p.id}">
+              <option value="utgift">Utgift</option>
+              <option value="inntekt">Inntekt</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px;">
+            <button class="btn btn-primary" onclick="addTransaction('${p.id}')">+ Legg til</button>
+            <button class="btn btn-sm" onclick="openEditPost('${p.id}')">✎ Navn</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteBudgetPost('${p.id}')">Slett post</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditPost(id) {
+  const p = ST.budgetPosts.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('ep-id').value = id;
+  document.getElementById('ep-navn').value = p.navn || '';
+  document.getElementById('modal-editpost').style.display = 'flex';
+}
+async function saveEditPost(btn) {
+  const id = document.getElementById('ep-id').value;
+  const navn = document.getElementById('ep-navn').value.trim();
+  if (!navn) return;
+  const p = ST.budgetPosts.find(x => x.id === id);
+  btnLoad(btn, 'Lagrer…');
+  await api('saveBudgetPost', { id, navn, budsjett: p?.budsjett || 0 });
+  document.getElementById('modal-editpost').style.display = 'none';
+  btnDone(btn);
+  showSync('Navn oppdatert ✓');
+  const [bp, tr] = await Promise.all([api('getBudgetPosts'), api('getTransactions')]);
+  ST.budgetPosts = bp || []; ST.transactions = tr || []; renderBudget();
+}
+
+function openEditTrans(id, postId) {
+  const t = ST.transactions.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('et-id').value = id;
+  document.getElementById('et-postid').value = postId;
+  document.getElementById('et-desc').value = t.desc || '';
+  document.getElementById('et-amount').value = t.amount || '';
+  document.getElementById('et-dato').value = t.dato ? String(t.dato).substring(0,10) : '';
+  document.getElementById('et-type').value = t.type || 'utgift';
+  document.getElementById('modal-edittrans').style.display = 'flex';
+}
+async function saveEditTrans(btn) {
+  const id = document.getElementById('et-id').value;
+  const postId = document.getElementById('et-postid').value;
+  const desc = document.getElementById('et-desc').value.trim();
+  const amount = document.getElementById('et-amount').value;
+  const dato = document.getElementById('et-dato').value;
+  const type = document.getElementById('et-type').value;
+  if (!desc || !amount) return;
+  btnLoad(btn, 'Lagrer…');
+  await api('saveTransaction', { id, postId, desc, amount, dato: dato || new Date().toISOString().slice(0,10), type });
+  document.getElementById('modal-edittrans').style.display = 'none';
+  btnDone(btn);
+  showSync('Transaksjon oppdatert ✓');
+  const [bp, tr] = await Promise.all([api('getBudgetPosts'), api('getTransactions')]);
+  ST.budgetPosts = bp || []; ST.transactions = tr || []; renderBudget();
+}
+
+function openEditKal(id) {
+  const e = _kalEvents.find(x => String(x.id) === String(id));
+  if (!e) return;
+  document.getElementById('ek-id').value = id;
+  document.getElementById('ek-title').value = e.title || '';
+  document.getElementById('ek-date').value = e.date || '';
+  document.getElementById('ek-type').value = e.type || 'aktivitet';
+  document.getElementById('ek-fag').value = e.fag || '';
+  document.getElementById('modal-editkal').style.display = 'flex';
+}
+async function saveEditKal(btn) {
+  const id    = document.getElementById('ek-id').value;
+  const title = document.getElementById('ek-title').value.trim();
+  const date  = document.getElementById('ek-date').value;
+  const type  = document.getElementById('ek-type').value;
+  const fag   = document.getElementById('ek-fag').value.trim();
+  if (!title || !date) return;
+  btnLoad(btn, 'Lagrer…');
+  const payload = { action: 'saveEvent', data: { id, date, type, title, fag } };
+  await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)));
+  // Update local state
+  const idx = _kalEvents.findIndex(x => String(x.id) === String(id));
+  if (idx >= 0) _kalEvents[idx] = { ..._kalEvents[idx], title, date, type, fag };
+  document.getElementById('modal-editkal').style.display = 'none';
+  btnDone(btn);
+  showSync('Hendelse oppdatert ✓');
+  drawKalGrid();
+  renderKalList();
+}
+
+// ══ EVENT BOTTOM SHEET ════════════════════════════════════════════════════════
+const KAL_TYPE_LABELS = {
+  forestilling: 'Forestilling', aktivitet: 'Aktivitet', nb: 'NB / Viktig',
+  frist: 'Frist', fagdag: 'Fagdag', fridag: 'Fridag', avtale: 'Avtale', ingen: 'Ingen undervisning'
+};
+
+function openEvSheet(id) {
+  const e = _kalEvents.find(x => String(x.id) === String(id));
+  if(!e) return;
+  const col = EVENT_COLORS[e.type] || 'var(--text3)';
+  document.getElementById('ev-sheet-type').textContent = KAL_TYPE_LABELS[e.type] || e.type;
+  document.getElementById('ev-sheet-type').style.color = col;
+  document.getElementById('ev-sheet-title').textContent = e.title || '—';
+  // Date + time
+  const tidFra = fmtTime(e.tidFra);
+  const tidTil = fmtTime(e.tidTil);
+  const tidStr = tidFra ? (tidTil ? tidFra + '–' + tidTil : tidFra) : '';
+  document.getElementById('ev-sheet-dato').textContent = fmtDateLang(e.date) + (tidStr ? ' · kl. ' + tidStr : '');
+  // Trinn pills
+  const trinnEl = document.getElementById('ev-sheet-trinn');
+  const trinn = e.fag ? String(e.fag).split(',').map(t => t.trim()).filter(Boolean) : [];
+  trinnEl.innerHTML = trinn.map(t => `<span class="ev-sheet-trinn-pill">${t}</span>`).join('');
+  // Lærer(e)
+  const laerereEl = document.getElementById('ev-sheet-laerere');
+  if(laerereEl) {
+    if (e.laerere) {
+      laerereEl.innerHTML = `<span style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:2px;">Lærer</span>${e.laerere}`;
+      laerereEl.style.display = '';
+    } else {
+      laerereEl.style.display = 'none';
+    }
+  }
+  // Elever
+  const eleverEl = document.getElementById('ev-sheet-elever');
+  if(eleverEl) {
+    if (e.elever) {
+      eleverEl.innerHTML = `<span style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:2px;">Elever</span>${e.elever}`;
+      eleverEl.style.display = '';
+    } else {
+      eleverEl.style.display = 'none';
+    }
+  }
+  document.getElementById('ev-overlay').classList.add('open');
+  document.getElementById('ev-sheet').classList.add('open');
+}
+
+function closeEvSheet() {
+  document.getElementById('ev-overlay').classList.remove('open');
+  document.getElementById('ev-sheet').classList.remove('open');
+}
+
+// ══ PRINT BUDSJETT ════════════════════════════════════════════════════════════
+function printBudsjett() {
+  const posts = ST.budgetPosts;
+  const trans = ST.transactions;
+  const ramme = +ST.budgetRamme || 0;
+  if (!posts.length) { alert('Ingen poster å skrive ut.'); return; }
+
+  let totalTildelt=0, totalBrukt=0, totalInntekt=0;
+  const postData = posts.map(p => {
+    const pt = trans.filter(t => t.postId === p.id);
+    const brukt = pt.filter(t => t.type !== 'inntekt').reduce((s,t) => s+(+t.amount||0), 0);
+    const inntekt = pt.filter(t => t.type === 'inntekt').reduce((s,t) => s+(+t.amount||0), 0);
+    const tildelt = +p.budsjett || 0;
+    totalTildelt += tildelt; totalBrukt += brukt; totalInntekt += inntekt;
+    return { ...p, brukt, inntekt, tildelt, igjen: tildelt - brukt + inntekt, trans: pt };
+  });
+  const ikkefordelt = ramme - totalTildelt;
+  const dato = new Date().toLocaleDateString('nb-NO', {day:'numeric',month:'long',year:'numeric'});
+
+  const postsHTML = postData.map(p => `
+    <div class="p-post">
+      <div class="p-post-header">
+        <span class="p-post-name">${p.navn}</span>
+        <span class="p-post-nums">Tildelt: ${fmtKr(p.tildelt)} &nbsp;·&nbsp; Brukt: ${fmtKr(p.brukt)}${p.inntekt ? ' &nbsp;·&nbsp; Inntekt: '+fmtKr(p.inntekt) : ''} &nbsp;·&nbsp; <strong>Igjen: ${fmtKr(p.igjen)}</strong></span>
+      </div>
+      ${p.trans.length ? `
+      <table class="p-table">
+        <thead><tr><th>Dato</th><th>Beskrivelse</th><th>Type</th><th style="text-align:right;">Beløp</th></tr></thead>
+        <tbody>
+          ${p.trans.sort((a,b)=>(a.dato||'').localeCompare(b.dato||'')).map(t=>`
+          <tr>
+            <td>${fmtDate(t.dato)}</td>
+            <td>${t.desc}</td>
+            <td>${t.type==='inntekt'?'Inntekt':'Utgift'}</td>
+            <td style="text-align:right;">${t.type==='inntekt'?'+':'-'} ${fmtKr(t.amount)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<p class="p-empty">Ingen utgifter registrert.</p>'}
+    </div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8">
+<title>Skyggeregnskap — ${dato}</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 13px; color: #111; margin: 0; padding: 32px 48px; }
+  h1 { font-size: 22px; font-weight: normal; font-style: italic; margin: 0 0 4px; }
+  .p-meta { font-size: 11px; color: #666; margin-bottom: 28px; }
+  .p-summary { display: flex; gap: 32px; margin-bottom: 32px; padding: 14px 18px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; flex-wrap:wrap; }
+  .p-sum-item label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 3px; }
+  .p-sum-item value { font-size: 18px; font-style: italic; }
+  .p-post { margin-bottom: 28px; page-break-inside: avoid; }
+  .p-post-header { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1.5px solid #111; margin-bottom: 0; }
+  .p-post-name { font-size: 14px; font-weight: bold; }
+  .p-post-nums { font-size: 11px; color: #444; }
+  .p-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 0; }
+  .p-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #888; padding: 6px 8px; border-bottom: 0.5px solid #ccc; font-weight: normal; }
+  .p-table td { padding: 6px 8px; border-bottom: 0.5px solid #eee; color: #222; }
+  .p-table tr:last-child td { border-bottom: none; }
+  .p-empty { font-size: 11px; color: #aaa; font-style: italic; padding: 8px 0; margin: 0; }
+  @media print { body { padding: 16px 24px; } }
+</style></head><body>
+<h1>Skyggeregnskap</h1>
+<div class="p-meta">Dramafag · Vågen vgs &nbsp;·&nbsp; Skrevet ut ${dato}</div>
+<div class="p-summary">
+  ${ramme ? `<div class="p-sum-item"><label>Total ramme</label><value>${fmtKr(ramme)}</value></div>` : ''}
+  <div class="p-sum-item"><label>Totalt tildelt</label><value>${fmtKr(totalTildelt)}</value></div>
+  ${ramme ? `<div class="p-sum-item"><label>Ikke fordelt</label><value>${fmtKr(ikkefordelt)}</value></div>` : ''}
+  <div class="p-sum-item"><label>Totalt brukt</label><value>${fmtKr(totalBrukt)}</value></div>
+  ${totalInntekt ? `<div class="p-sum-item"><label>Inntekter</label><value>${fmtKr(totalInntekt)}</value></div>` : ''}
+</div>
+${postsHTML}
+<script>window.onload=()=>window.print();<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ══ KOMMENTARTRÅD (TIL ORIENTERING) ══════════════════════════════════════════
+let _threadFlags = {}; // arrangementId -> bool (has unread)
+
+async function loadThread(arrangementId) {
+  const comments = await api('getTilOrientering', { arrangementId }) || [];
+  renderThread(arrangementId, comments);
+  // Check for unread and show flag
+  const hasUnread = comments.some(c => c.lest === 'nei' || c.lest === false);
+  _threadFlags[arrangementId] = hasUnread;
+  const dot = document.getElementById('flag-' + arrangementId);
+  if(dot) dot.style.display = hasUnread ? 'inline-block' : 'none';
+  updateSidebarFlags();
+}
+
+function renderThread(arrangementId, comments) {
+  const container = document.getElementById('thread-comments-' + arrangementId);
+  if(!container) return;
+  if(!comments.length) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--text3);font-style:italic;padding:4px 0;">Ingen kommentarer ennå.</div>';
+    return;
+  }
+  // Build tree: top-level and replies
+  const top = comments.filter(c => !c.foreldreId);
+  const replies = comments.filter(c => c.foreldreId);
+  container.innerHTML = top.map(c => {
+    const cReplies = replies.filter(r => r.foreldreId === c.id);
+    const isUnread = c.lest === 'nei' || c.lest === false;
+    return `<div class="thread-comment${isUnread?' unread':''}">
+      <div class="thread-meta"><strong>${c.laerer}</strong><span>${fmtDateLang(String(c.dato).substring(0,10))}</span>${isUnread?'<span style="font-size:9px;color:var(--red);letter-spacing:0.08em;">NY</span>':''}</div>
+      <div class="thread-text">${c.notat}</div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="thread-reply-btn" onclick="toggleReplyForm('${c.id}','${arrangementId}')">↩ Svar</button>
+        <button class="thread-reply-btn" style="color:var(--red);" onclick="deleteThreadComment('${c.id}','${arrangementId}')">Slett</button>
+      </div>
+      <div class="thread-reply-wrap" id="reply-wrap-${c.id}">
+        <input class="form-input" id="reply-navn-${c.id}" placeholder="Navn" style="font-size:12px;">
+        <textarea class="form-input" id="reply-notat-${c.id}" placeholder="Svar" style="min-height:50px;font-size:12px;"></textarea>
+        <button class="btn btn-primary" style="align-self:flex-start;font-size:11px;padding:5px 14px;" onclick="sendThreadComment('${arrangementId}','${c.id}')">Send svar</button>
+      </div>
+      ${cReplies.map(r => {
+        const rUnread = r.lest === 'nei' || r.lest === false;
+        return `<div class="thread-comment reply">
+          <div class="thread-meta"><strong>${r.laerer}</strong><span>${fmtDateLang(String(r.dato).substring(0,10))}</span>${rUnread?'<span style="font-size:9px;color:var(--red);letter-spacing:0.08em;">NY</span>':''}</div>
+          <div class="thread-text">${r.notat}</div>
+          <button class="thread-reply-btn" style="color:var(--red);" onclick="deleteThreadComment('${r.id}','${arrangementId}')">Slett</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function toggleReplyForm(commentId, arrangementId) {
+  const wrap = document.getElementById('reply-wrap-' + commentId);
+  if(!wrap) return;
+  const isOpen = wrap.style.display === 'flex';
+  wrap.style.display = isOpen ? 'none' : 'flex';
+  if(!isOpen) document.getElementById('reply-navn-' + commentId)?.focus();
+}
+
+async function sendThreadComment(arrangementId, foreldreId) {
+  const navnId = foreldreId ? 'reply-navn-' + foreldreId : 'thread-navn-' + arrangementId;
+  const notatId = foreldreId ? 'reply-notat-' + foreldreId : 'thread-notat-' + arrangementId;
+  const navn = document.getElementById(navnId)?.value.trim();
+  const notat = document.getElementById(notatId)?.value.trim();
+  if(!navn || !notat) { showSync('⚠ Fyll inn navn og kommentar'); return; }
+  showSync('Sender…', 0);
+  await api('saveTilOrientering', { arrangementId, foreldreId: foreldreId || '', laerer: navn, notat });
+  document.getElementById(notatId).value = '';
+  if(foreldreId) {
+    document.getElementById('reply-wrap-' + foreldreId).style.display = 'none';
+    document.getElementById('reply-navn-' + foreldreId).value = '';
+  }
+  showSync('Sendt ✓');
+  await loadThread(arrangementId);
+}
+
+async function deleteThreadComment(commentId, arrangementId) {
+  await api('deleteTilOrientering', { id: commentId });
+  await loadThread(arrangementId);
+  showSync('Kommentar slettet');
+}
+
+async function clearThreadFlag(arrangementId) {
+  await api('markerLest', { arrangementId });
+  _threadFlags[arrangementId] = false;
+  const dot = document.getElementById('flag-' + arrangementId);
+  if(dot) dot.style.display = 'none';
+  updateSidebarFlags();
+  showSync('Flagg fjernet ✓');
+}
+
+function updateSidebarFlags() {
+  const hasAny = Object.values(_threadFlags).some(Boolean);
+  // Add/remove flag dot from sidebar nav item
+  let sideFlag = document.getElementById('sidebar-thread-flag');
+  const navItem = document.querySelector('.nav-item[onclick*="arrangement"]');
+  if(navItem) {
+    if(hasAny && !sideFlag) {
+      sideFlag = document.createElement('span');
+      sideFlag.id = 'sidebar-thread-flag';
+      sideFlag.className = 'nav-flag';
+      navItem.appendChild(sideFlag);
+    } else if(!hasAny && sideFlag) {
+      sideFlag.remove();
+    }
+  }
+}
+
+// ── SVAR FLAGS (gold — new ja-svar on bekreftet arrangement) ─────────────────
+const _svarFlags = {};
+
+function setSvarFlag(id) {
+  _svarFlags[id] = true;
+  api('setSvarFlag', { id, flag: 'ja' }).catch(() => {});
+  const dot = document.getElementById('svar-flag-' + id);
+  if (dot) dot.style.display = 'inline-block';
+  const clearBtn = document.getElementById('clear-svar-flag-' + id);
+  if (clearBtn) clearBtn.style.display = 'inline-block';
+  updateSidebarSvarFlag();
+}
+
+function clearSvarFlag(id) {
+  _svarFlags[id] = false;
+  api('setSvarFlag', { id, flag: 'nei' }).catch(() => {});
+  const dot = document.getElementById('svar-flag-' + id);
+  if (dot) dot.style.display = 'none';
+  const clearBtn = document.getElementById('clear-svar-flag-' + id);
+  if (clearBtn) clearBtn.style.display = 'none';
+  updateSidebarSvarFlag();
+}
+
+function updateSidebarSvarFlag() {
+  const hasAny = Object.values(_svarFlags).some(Boolean);
+  let sideFlag = document.getElementById('sidebar-svar-flag');
+  const navItem = document.querySelector('.nav-item[onclick*="arrangement"]');
+  if (navItem) {
+    if (hasAny && !sideFlag) {
+      sideFlag = document.createElement('span');
+      sideFlag.id = 'sidebar-svar-flag';
+      sideFlag.className = 'nav-svar-flag';
+      navItem.appendChild(sideFlag);
+    } else if (!hasAny && sideFlag) {
+      sideFlag.remove();
+    }
+  }
+}
+
+// Threads load on card open via toggleCard
+
+// ══ LÆRERLISTE ════════════════════════════════════════════════════════════════
+function renderLaerere(){
+  const list=document.getElementById('laerere-list');
+  list.innerHTML=ST.laerere.map((l,i)=>`
+    <div class="laerer-row">
+      <input class="form-input" value="${l.navn||''}" placeholder="Navn" id="ln-${i}">
+      <input class="form-input" value="${l.epost||''}" placeholder="epost@skole.no" id="le-${i}">
+      <button class="btn btn-sm btn-danger" onclick="removeLaererRow(${i})">×</button>
+    </div>`).join('');
+  if(!ST.laerere.length) {
+    ST.laerere.push({navn:'',epost:''});
+    renderLaerere();
+  }
+}
+function syncLaerereFromDOM(){
+  ST.laerere.forEach((_,i)=>{
+    const n=document.getElementById('ln-'+i);
+    const e=document.getElementById('le-'+i);
+    if(n) ST.laerere[i].navn=n.value;
+    if(e) ST.laerere[i].epost=e.value;
+  });
+}
+function addLaererRow(){syncLaerereFromDOM();ST.laerere.push({navn:'',epost:''});renderLaerere();
+  // Focus the new name field
+  const idx=ST.laerere.length-1;
+  setTimeout(()=>document.getElementById('ln-'+idx)?.focus(),50);
+}
+function removeLaererRow(i){syncLaerereFromDOM();ST.laerere.splice(i,1);renderLaerere();}
+async function saveLaerere(btn){
+  btnLoad(btn, 'Lagrer…');
+  showSync('Lagrer lærerliste...', 0);
+  const newList=[];
+  ST.laerere.forEach((_,i)=>{
+    const n=document.getElementById('ln-'+i)?.value.trim();
+    const e=document.getElementById('le-'+i)?.value.trim();
+    if(n) newList.push({navn:n,epost:e||''});
+  });
+  await api('saveLaerere', {data: JSON.stringify(newList)});
+  ST.laerere=newList;
+  renderLaerere();
+  btnDone(btn);
+  showSync('Lærerliste lagret ✓ ('+newList.length+' lærere)');
+}
+
+// ══ TEACHER RESPONSE MODE ═════════════════════════════════════════════════════
+let _fors='nei';
+let _trinn=new Set();
+function toggleTrinn(v){
+  if(_trinn.has(v)) _trinn.delete(v);
+  else {
+    if(v==='baremeg') _trinn.clear(); // bare meg is exclusive
+    else _trinn.delete('baremeg');
+    _trinn.add(v);
+  }
+  ['1mdra','2mdra','3mdra','baremeg'].forEach(t=>{
+    const el=document.getElementById('trinn-'+t);
+    if(el) el.className='radio-opt'+(_trinn.has(t)?' sel-ja':'');
+  });
+  // hide elever if bare meg
+  const ef=document.getElementById('elever-field');
+  if(ef) ef.style.display=_trinn.has('baremeg')?'block':'none';
+  // hide forstyrrer if bare meg (individual — no class disruption question needed)
+  const ff=document.getElementById('fors-field');
+  if(ff) ff.style.display=_trinn.has('baremeg')?'none':'block';
+}
+function setForstyrrer(v){
+  _fors=v;
+  document.getElementById('fors-ja').className='radio-opt'+(v==='ja'?' sel-ja':'');
+  document.getElementById('fors-nei').className='radio-opt'+(v==='nei'?' sel-nei':'');
+  document.getElementById('evt-laerer-field').style.display = v === 'ja' ? 'block' : 'none';
+}
+// ══ PUBLIC TEACHER VIEW ══════════════════════════════════════════════════════
+async function initPublicView(){
+  document.getElementById('public-view').style.display='block';
+  const arrangements = await api('getArrangement') || [];
+  const today = new Date().toISOString().slice(0,10);
+  const open = arrangements
+    .filter(h => {
+      if(h.type==='info') return true;
+      return !h.frist || h.frist >= today;
+    })
+    .sort((a,b) => (a.dato||'').localeCompare(b.dato||''));
+
+  const list = document.getElementById('public-list');
+  if(!open.length){
+    list.innerHTML='<div class="empty-state">Ingen kommende arrangement eller info.</div>';
+    return;
+  }
+
+  list.innerHTML = open.map(h => {
+    const isPamelding = h.type === 'pamelding';
+    const metaLine = fmtDateLang(h.dato)
+      + (h.tid&&fmtTime(h.tid) ? ' · kl. '+fmtTime(h.tid) : '')
+      + (isPamelding && h.frist ? ' · Frist: '+fmtDate(h.frist) : '');
+    const kontaktLine = h.kontakt ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;">Kontakt: ${h.kontakt}</div>` : '';
+
+    const infoCard = `
+    <div class="pub-card pub-info" id="pub-${h.id}">
+      <div class="pub-card-header" onclick="togglePubCard('${h.id}','${h.type}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--text3);border:0.5px solid var(--border2);">Til orientering</span>
+          <span class="unread-dot" id="pub-flag-${h.id}" style="display:none;" title="Ny diskusjon"></span>
+        </div>
+        <div class="pub-card-title">${h.tittel}</div>
+        <div class="pub-card-meta">${metaLine}</div>
+      </div>
+      <div class="pub-card-body">
+        ${h.info?`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.65;">${h.info}</div>`:''}
+        ${kontaktLine}
+        <div class="thread-wrap" id="pub-thread-${h.id}">
+          <div id="pub-thread-comments-${h.id}"><div style="font-size:11px;color:var(--text3);">Laster diskusjon…</div></div>
+          <div class="thread-input-wrap">
+            <input class="form-input" id="pub-thread-navn-${h.id}" placeholder="Navn" style="font-size:12px;">
+            <textarea class="form-input" id="pub-thread-notat-${h.id}" placeholder="Kommentar" style="min-height:60px;font-size:12px;"></textarea>
+            <button class="btn btn-primary" style="align-self:flex-start;" onclick="sendPubThreadComment('${h.id}',null)">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+    const pameldingCard = `
+    <div class="pub-card" id="pub-${h.id}" style="border-color:var(--green-b);">
+      <div class="pub-card-header" onclick="togglePubCard('${h.id}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-b);">Påmelding</span>
+          ${h.bekreftet==='ja'
+            ? `<span class="bekreftet-tag">✓ Bekreftet</span>`
+            : `<span class="ubekreftet-tag">Ubekreftet</span>`}
+        </div>
+        <div class="pub-card-title">${h.tittel}</div>
+        <div class="pub-card-meta">${metaLine}</div>
+        ${h.bekreftet==='ja' && (h.tidFra||h.tidTil||h.laerere||h.elever) ? `<div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+          ${h.tidFra||h.tidTil ? `<div style="font-size:11px;color:var(--text2);">🕐 ${[h.tidFra,h.tidTil].filter(Boolean).join(' – ')}</div>` : ''}
+          ${h.laerere ? `<div style="font-size:11px;color:var(--text2);">👤 ${h.laerere}</div>` : ''}
+          ${h.elever ? `<div style="font-size:11px;color:var(--text2);">🎭 ${h.elever}</div>` : ''}
+        </div>` : ''}
+      </div>
+      <div class="pub-card-body">
+        ${h.info?`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.65;">${h.info}</div>`:''}
+        ${kontaktLine}
+        <div id="pub-form-${h.id}">
+          <div class="form-field">
+            <label>Ditt navn</label>
+            <input class="form-input" id="pub-navn-${h.id}" placeholder="Fornavn Etternavn">
+          </div>
+          <div class="form-field">
+            <label>Trinn / gruppe <span style="opacity:0.5;">(velg en eller flere)</span></label>
+            <div class="radio-group" style="flex-wrap:wrap;">
+              <label class="radio-opt" id="pub-1mdra-${h.id}" onclick="togglePubTrinn('${h.id}','1mdra')">1mdra</label>
+              <label class="radio-opt" id="pub-2mdra-${h.id}" onclick="togglePubTrinn('${h.id}','2mdra')">2mdra</label>
+              <label class="radio-opt" id="pub-3mdra-${h.id}" onclick="togglePubTrinn('${h.id}','3mdra')">3mdra</label>
+              <label class="radio-opt" id="pub-baremeg-${h.id}" onclick="togglePubTrinn('${h.id}','baremeg')">Bare individer</label>
+            </div>
+          </div>
+          <div class="form-field" id="pub-elever-field-${h.id}">
+            <label>Elever som blir med <span style="opacity:0.5;">(navn eller antall)</span></label>
+            <textarea class="form-input" id="pub-elever-${h.id}" placeholder="f.eks. Elev A, Elev B"></textarea>
+          </div>
+          <div class="form-field" id="pub-fors-field-${h.id}">
+            <label>Forstyrrer dette undervisning?</label>
+            <div class="radio-group">
+              <label class="radio-opt sel-nei" id="pub-fors-nei-${h.id}" onclick="setPubFors('${h.id}','nei')">Nei</label>
+              <label class="radio-opt" id="pub-fors-ja-${h.id}" onclick="setPubFors('${h.id}','ja')">Ja</label>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Ansvarlig lærer</label>
+            <input class="form-input" id="pub-evtlaerer-${h.id}" placeholder="Navn på lærer">
+          </div>
+          <div class="form-field" id="pub-evtlaerer-field-${h.id}" style="display:none;">
+            <label>Berørte lærere</label>
+            <input class="form-input" id="pub-berørte-${h.id}" placeholder="Navn på berørte lærere">
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Avreise</label>
+              <input type="time" class="form-input" id="pub-avreise-${h.id}">
+            </div>
+            <div class="form-field">
+              <label>Tilbake</label>
+              <input type="time" class="form-input" id="pub-tilbake-${h.id}">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Notater <span style="opacity:0.5;">(valgfritt)</span></label>
+            <textarea class="form-input" id="pub-notater-${h.id}" placeholder="Eventuelle kommentarer..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="pub-btn-${h.id}" onclick="submitPub('${h.id}')">Send inn</button>
+            <button class="btn btn-danger" id="pub-del-${h.id}" style="display:none;" onclick="deletePubSvar('${h.id}')">Slett mitt svar</button>
+          </div>
+          <div id="pub-ok-${h.id}" style="display:none;font-size:12px;color:var(--green);margin-top:8px;">✓ Lagret</div>
+        </div>
+      </div>
+    </div>`;
+
+    return isPamelding ? pameldingCard : infoCard;
+  }).join('');
+
+  // Init trinn state per card
+  window._pubTrinn = {};
+  window._pubFors = {};
+
+  // Load threads for all info-type arrangements
+  open.filter(h => h.type === 'info').forEach(h => loadPubThread(h.id));
+  open.forEach(h => {
+    _pubTrinn[h.id] = new Set();
+    _pubFors[h.id] = 'nei';
+  });
+}
+
+function togglePubCard(id, type){
+  const card = document.getElementById('pub-'+id);
+  card.classList.toggle('open');
+  if(card.classList.contains('open') && type === 'info') {
+    loadPubThread(id);
+  }
+}
+
+function togglePubTrinn(hendelseId, v){
+  const t = _pubTrinn[hendelseId];
+  if(t.has(v)) t.delete(v);
+  else {
+    if(v==='baremeg') t.clear();
+    else t.delete('baremeg');
+    t.add(v);
+  }
+  ['1mdra','2mdra','3mdra','baremeg'].forEach(tr=>{
+    const el=document.getElementById('pub-'+tr+'-'+hendelseId);
+    if(el) el.className='radio-opt'+(t.has(tr)?' sel-ja':'');
+  });
+  const ef=document.getElementById('pub-elever-field-'+hendelseId);
+  const ff=document.getElementById('pub-fors-field-'+hendelseId);
+  const bare=t.has('baremeg');
+  if(ef) ef.style.display=bare?'block':'none';
+  if(ff) ff.style.display=bare?'none':'block';
+}
+
+function setPubFors(hendelseId, v){
+  _pubFors[hendelseId]=v;
+  document.getElementById('pub-fors-ja-'+hendelseId).className='radio-opt'+(v==='ja'?' sel-ja':'');
+  document.getElementById('pub-fors-nei-'+hendelseId).className='radio-opt'+(v==='nei'?' sel-nei':'');
+  document.getElementById('pub-evtlaerer-field-'+hendelseId).style.display=v==='ja'?'block':'none';
+}
+
+async function submitPub(hendelseId){
+  const btn=document.getElementById('pub-btn-'+hendelseId);
+  const navn=document.getElementById('pub-navn-'+hendelseId).value.trim();
+  if(!navn){alert('Skriv inn ditt navn.');return;}
+  btnLoad(btn,'Sender…');
+  const trinn=_pubTrinn[hendelseId];
+  const bare=trinn.has('baremeg');
+  await api('saveResponse',{
+    hendelseId,
+    laerer:navn,
+    fornavn:navn.split(' ')[0],
+    svar:'ja',
+    trinn:[...trinn].join(', '),
+    elever:bare?'':document.getElementById('pub-elever-'+hendelseId).value.trim(),
+    forstyrrer:bare?'nei':_pubFors[hendelseId],
+    evtLaerer:document.getElementById('pub-evtlaerer-'+hendelseId)?.value.trim()||'',
+    berørteLaerere:document.getElementById('pub-berørte-'+hendelseId)?.value.trim()||'',
+    avreise:document.getElementById('pub-avreise-'+hendelseId)?.value||'',
+    tilbake:document.getElementById('pub-tilbake-'+hendelseId)?.value||'',
+    notater:document.getElementById('pub-notater-'+hendelseId).value.trim()
+  });
+  // Raise gold svar flag so coordinator knows a new response came in
+  setSvarFlag(hendelseId);
+  btnDone(btn);
+  // Reset form for next teacher
+  document.getElementById('pub-navn-'+hendelseId).value = '';
+  document.getElementById('pub-elever-'+hendelseId).value = '';
+  document.getElementById('pub-notater-'+hendelseId).value = '';
+  document.getElementById('pub-avreise-'+hendelseId).value = '';
+  document.getElementById('pub-tilbake-'+hendelseId).value = '';
+  const berørteEl = document.getElementById('pub-berørte-'+hendelseId);
+  if(berørteEl) berørteEl.value = '';
+  const evtEl = document.getElementById('pub-evtlaerer-'+hendelseId);
+  if(evtEl) evtEl.value = '';
+  // Reset trinn
+  _pubTrinn[hendelseId] = new Set();
+  ['1mdra','2mdra','3mdra','baremeg'].forEach(t => {
+    const el = document.getElementById('pub-'+t+'-'+hendelseId);
+    if(el) el.className = 'radio-opt';
+  });
+  // Reset forstyrrer
+  _pubFors[hendelseId] = 'nei';
+  setPubFors(hendelseId, 'nei');
+  // Reset elever/fors field visibility
+  const ef = document.getElementById('pub-elever-field-'+hendelseId);
+  const ff = document.getElementById('pub-fors-field-'+hendelseId);
+  if(ef) ef.style.display = 'none';
+  if(ff) ff.style.display = 'block';
+  btn.textContent = 'Send inn';
+  document.getElementById('pub-del-'+hendelseId).style.display='none';
+  document.getElementById('pub-ok-'+hendelseId).style.display='block';
+  setTimeout(()=>document.getElementById('pub-ok-'+hendelseId).style.display='none', 3000);
+}
+
+async function deletePubSvar(hendelseId){
+  const navn=document.getElementById('pub-navn-'+hendelseId).value.trim();
+  if(!navn||!confirm('Slette ditt svar?'))return;
+  // find and delete by laerer name
+  const responses = await api('getResponses',{hendelseId});
+  const mine = (responses||[]).find(r=>r.laerer===navn);
+  if(mine) await api('deleteResponse',{id:mine.id});
+  document.getElementById('pub-del-'+hendelseId).style.display='none';
+  document.getElementById('pub-btn-'+hendelseId).textContent='Send inn';
+  document.getElementById('pub-ok-'+hendelseId).style.display='none';
+}
+
+async function initTeacherView(){
+  // NEI — show confirmation immediately, save in background
+  if(SVAR_TYPE==='nei'){
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e0d0c;">
+        <div style="text-align:center;padding:32px;background:#151412;border:0.5px solid rgba(255,255,255,0.07);border-radius:8px;max-width:320px;">
+          <div style="font-size:28px;margin-bottom:12px;">✓</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:300;font-style:italic;color:#9a9590;margin-bottom:8px;">Registrert</div>
+          <div style="font-size:12px;color:#5a5650;">Dette vinduet lukkes automatisk.</div>
+        </div>
+      </div>`;
+    api('saveResponse',{hendelseId:HENDELSE_ID,laerer:LAERER_ID||'Ukjent',svar:'nei'});
+    setTimeout(()=>window.close(), 2500);
+    return;
+  }
+
+  document.getElementById('teacher-view').style.display='block';
+
+  // JA — load event info and show form
+  const h=(await api('getArrangement')||[]).find(x=>x.id===HENDELSE_ID);
+  if(!h){document.getElementById('rv-tittel').textContent='Arrangement ikke funnet';return;}
+  document.getElementById('rv-tittel').textContent=h.tittel;
+  document.getElementById('rv-dato').textContent=fmtDateLang(h.dato)+(h.tid&&fmtTime(h.tid)?' · kl. '+fmtTime(h.tid):'');
+  document.getElementById('rv-info').textContent=h.info||'';
+  document.getElementById('rv-frist').textContent=(h.frist?'Svarfrist: '+fmtDate(h.frist):'')+(h.kontakt?' · Kontakt: '+h.kontakt:'');
+  document.getElementById('ja-form').style.display='block';
+  document.getElementById('rv-laerer').value=LAERER_ID||'';
+  setForstyrrer('nei');
+}
+async function submitJa(){
+  const btn = document.querySelector('#ja-form .btn-primary');
+  btnLoad(btn, 'Sender…');
+  const laererNavn = document.getElementById('rv-laerer').value||LAERER_ID||'Ukjent';
+  const fornavn = laererNavn.split(' ')[0];
+  await api('saveResponse',{
+    hendelseId:HENDELSE_ID,
+    laerer:laererNavn,
+    fornavn:fornavn,
+    svar:'ja',
+    trinn:[..._trinn].join(', '),
+    elever:_trinn.has('baremeg')?document.getElementById('rv-elever').value.trim():'',
+    forstyrrer:_trinn.has('baremeg')?'nei':_fors,
+    evtLaerer:document.getElementById('rv-evt-laerer')?.value.trim()||'',
+    berørteLaerere:document.getElementById('rv-berørte-laerere')?.value.trim()||'',
+    avreise:document.getElementById('rv-avreise').value,
+    tilbake:document.getElementById('rv-tilbake').value,
+    notater:document.getElementById('rv-notater').value.trim()
+  });
+  // Raise gold svar flag so coordinator knows a new response came in
+  setSvarFlag(HENDELSE_ID);
+  document.getElementById('ja-form').style.display='none';
+  document.getElementById('thank-you').style.display='block';
+}
+
+// ══ KALENDER TAB ══════════════════════════════════════════════════════════════
+const EVENT_COLORS = {
+  fridag:'#5a5650', fagdag:'#8a7a6a', ingen:'#8a7a6a',
+  forestilling:'#EF9F27', aktivitet:'#5DCAA5',
+  nb:'#E24B4A', frist:'#E24B4A', avtale:'#AFA9EC'
+};
+let _kalEvents = [];
+let _kalYear, _kalMonth;
+
+async function initKalenderTab() {
+  if(_kalEvents.length) { drawKalGrid(); renderKalList(); return; }
+  document.getElementById('kal-list').innerHTML = '<div class="empty-state">Laster...</div>';
+  await loadKalEvents();
+}
+
+async function loadKalEvents() {
+  try {
+    const [kalRes, laerereRes] = await Promise.all([
+      fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify({action:'getAll', data:{}}))),
+      api('getKalLaerere')
+    ]);
+    const json = await kalRes.json();
+    if(json.ok && json.data && json.data.events) {
+      // Merge laerere data into events
+      const laerereMap = {};
+      (laerereRes || []).forEach(r => { laerereMap[r.eventId] = r.laerere; });
+      _kalEvents = json.data.events.map(e => ({
+        ...e,
+        date: String(e.date).substring(0,10),
+        laerere: laerereMap[e.id] || e.laerere || ''
+      }));
+    }
+    const n = new Date();
+    _kalYear  = n.getFullYear();
+    _kalMonth = n.getMonth();
+    drawKalGrid();
+    renderKalList();
+  } catch(err) {
+    document.getElementById('kal-list').innerHTML = '<div class="empty-state">Kunne ikke laste kalender.</div>';
+  }
+}
+
+function kalPrev() { _kalMonth--; if(_kalMonth<0){_kalMonth=11;_kalYear--;} drawKalGrid(); }
+function kalNext() { _kalMonth++; if(_kalMonth>11){_kalMonth=0;_kalYear++;} drawKalGrid(); }
+
+function drawKalGrid() {
+  const todayIso = new Date().toISOString().slice(0,10);
+  document.getElementById('kal-title').textContent = MONTHS[_kalMonth] + ' ' + _kalYear;
+  const daysInMonth = new Date(_kalYear, _kalMonth+1, 0).getDate();
+  const first = new Date(_kalYear, _kalMonth, 1);
+  let offset = first.getDay() - 1; if(offset<0) offset=6;
+
+  const DAY_NAMES = ['Man','Tir','Ons','Tor','Fre','Lør','Søn'];
+  let html = '<div class="full-cal-week"></div>' + DAY_NAMES.map(d=>`<div class="full-cal-name">${d}</div>`).join('');
+
+  // Week number helper
+  const weekNum = (date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+    const y = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d-y)/86400000)+1)/7);
+  };
+
+  const firstMonday = new Date(_kalYear, _kalMonth, 1-offset);
+  html += `<div class="full-cal-week">${weekNum(firstMonday)}</div>`;
+  for(let i=0;i<offset;i++) html += '<div class="full-cal-cell other-month"></div>';
+
+  for(let d=1;d<=daysInMonth;d++) {
+    const iso = `${_kalYear}-${String(_kalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const wday = new Date(_kalYear,_kalMonth,d).getDay();
+    if(wday===1 && d>1) html += `<div class="full-cal-week">${weekNum(new Date(_kalYear,_kalMonth,d))}</div>`;
+    const dayEvents = _kalEvents.filter(e=>e.date===iso);
+    const isToday = iso===todayIso;
+    const isFridag = dayEvents.some(e=>e.type==='fridag');
+    let cls='full-cal-cell'+(isToday?' is-today':'')+(isFridag?' is-fridag':((wday===0||wday===6)&&!dayEvents.length?' is-weekend':''));
+    let inner = `<div class="full-cal-date">${d}</div>`;
+    dayEvents.forEach(e=>{
+      const col = EVENT_COLORS[e.type]||'var(--text3)';
+      inner += `<div class="full-cal-chip" style="background:${col}22;color:${col};" onclick="event.stopPropagation();openEvSheet('${e.id}')">${e.title||e.type}</div>`;
+    });
+    html += `<div class="${cls}">${inner}</div>`;
+  }
+  const total = offset+daysInMonth;
+  const rem = total%7===0?0:7-(total%7);
+  for(let i=0;i<rem;i++) html += '<div class="full-cal-cell other-month"></div>';
+  document.getElementById('kal-grid').innerHTML = html;
+}
+
+function renderKalList() {
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = _kalEvents
+    .filter(e => e.type !== 'fridag' && e.date >= today)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const past = _kalEvents
+    .filter(e => e.type !== 'fridag' && e.date < today)
+    .sort((a,b) => b.date.localeCompare(a.date));
+  const all = [...upcoming, ...past];
+
+  if(!all.length){
+    document.getElementById('kal-list').innerHTML='<div class="empty-state">Ingen hendelser.</div>';
+    return;
+  }
+
+  document.getElementById('kal-list').innerHTML = all.map(e => {
+    const col = EVENT_COLORS[e.type]||'var(--text3)';
+    const isPast = e.date < today;
+    return `<div class="kal-event-row" style="${isPast?'opacity:0.5':''}" onclick="openEvSheet('${e.id}')">
+      <div class="kal-event-dato">${fmtDateLang(e.date)}</div>
+      <span class="kal-event-type" style="background:${col}22;color:${col};border:0.5px solid ${col}55;">${e.type}</span>
+      <div class="kal-event-title">${e.title||'—'}</div>
+      <div class="kal-event-fag" style="color:var(--accent);">${e.fag||''}</div>
+      <button class="btn btn-sm kal-edit-btn" data-id="${e.id}">✎</button>
+      <button class="btn btn-sm btn-danger kal-del-btn" data-id="${e.id}">Slett</button>
+    </div>`;
+  }).join('');
+}
+
+async function deleteKalEvent(id, btn) {
+  if(!confirm('Slette denne hendelsen fra alle kalendere?')) return;
+  btnLoad(btn, '…');
+  const payload = { action: 'deleteEvent', data: { id } };
+  await fetch(WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)));
+  _kalEvents = _kalEvents.filter(e => String(e.id) !== String(id));
+  drawKalGrid();
+  renderKalList();
+  showSync('Slettet fra kalender ✓');
+}
+
+// Event delegation for kal delete buttons
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.kal-del-btn');
+  if(btn) deleteKalEvent(btn.dataset.id, btn);
+  const eBtn = e.target.closest('.kal-edit-btn');
+  if(eBtn) openEditKal(eBtn.dataset.id);
+  const bBtn = e.target.closest('.bek-btn');
+  if(bBtn) {
+    const id  = bBtn.dataset.id;
+    const bek = bBtn.dataset.bek === 'true';
+    if(bek) toggleBekreft(id, false, bBtn);
+    else openBekreftDialog(id, bBtn);
+  }
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  // Default to light
+  if(!localStorage.getItem('pm_theme')) localStorage.setItem('pm_theme','light');
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('pm_theme')||'light');
+  if(MODE_SVAR && HENDELSE_ID) initTeacherView();
+  else if(MODE_PUBLIC) { document.title = 'Dramateam info'; initPublicView(); }
+  else initCoordinator();
+
+  // ── DRAGGABLE BEKREFT MODAL ──────────────────────────────────────────────
+  const dragHandle = document.getElementById('bekreft-drag-handle');
+  const dragModal  = document.querySelector('.bekreft-modal');
+  if (dragHandle && dragModal) {
+    let startX, startY, startLeft, startTop;
+    dragHandle.addEventListener('mousedown', e => {
+      const rect = dragModal.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      startLeft = rect.left; startTop = rect.top;
+      dragModal.style.transform = 'none';
+      dragModal.style.left = startLeft + 'px';
+      dragModal.style.top  = startTop  + 'px';
+      dragHandle.style.cursor = 'grabbing';
+      const onMove = e => {
+        dragModal.style.left = Math.max(0, Math.min(window.innerWidth - dragModal.offsetWidth,  startLeft + e.clientX - startX)) + 'px';
+        dragModal.style.top  = Math.max(0, Math.min(window.innerHeight - dragModal.offsetHeight, startTop  + e.clientY - startY)) + 'px';
+      };
+      const onUp = () => {
+        dragHandle.style.cursor = 'grab';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+});
+</script>
+</body>
+</html>
