@@ -381,7 +381,7 @@ const HENDELSE_ID = params.get('hendelseId') || params.get('arrangementId');
       </div>
       <button onclick="toggleTheme()" style="flex-shrink:0;margin-top:4px;background:transparent;border:0.5px solid var(--border2);border-radius:20px;padding:5px 12px;color:var(--text3);font-family:var(--font-m);font-size:11px;cursor:pointer;">☀/🌙</button>
     </div>
-    <div id="saksliste-box" style="border:1.5px solid var(--gold-b);background:var(--gold-bg);border-radius:var(--radius,8px);padding:16px 18px;margin-bottom:24px;">
+    <div id="saksliste-box" style="border:1.5px solid var(--gold-b);background:transparent;border-radius:var(--radius,8px);padding:16px 18px;margin-bottom:24px;">
       <div style="font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Gjeldende saksliste til dramateam møtet</div>
       <div id="saksliste-items" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
       <div style="display:flex;gap:8px;">
@@ -465,6 +465,14 @@ const HENDELSE_ID = params.get('hendelseId') || params.get('arrangementId');
           <div class="form-actions">
             <button class="btn btn-primary" onclick="saveArrangement(this)">Lagre</button>
             <button class="btn" onclick="cancelArrangementForm()">Avbryt</button>
+          </div>
+        </div>
+        <div id="saksliste-box-coord" style="border:1.5px solid var(--gold-b);background:transparent;border-radius:var(--radius,8px);padding:16px 18px;margin-bottom:20px;">
+          <div style="font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Gjeldende saksliste til dramateam møtet</div>
+          <div id="saksliste-items-coord" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="saksliste-input-coord" placeholder="Legg til sak…" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter') addSakslisteItem('coord');">
+            <button class="btn btn-primary" onclick="addSakslisteItem('coord')">Legg til</button>
           </div>
         </div>
         <div id="arrangement-list"></div>
@@ -939,6 +947,7 @@ const ST = { arrangement:[], laerere:[], contacts:[], budgetPosts:[], transactio
 
 async function initCoordinator() {
   document.getElementById('coordinator-view').style.display='block';
+  loadSaksliste('coord');
   // Restore last view
   const savedView = localStorage.getItem('pm_view') || 'arrangement';
   const navEl = document.querySelector(`.nav-item[onclick*="'${savedView}'"]`);
@@ -2026,8 +2035,9 @@ function escapeHtml(s){
   return d.innerHTML;
 }
 
-async function loadSaksliste(){
-  const wrap = document.getElementById('saksliste-items');
+async function loadSaksliste(suffix){
+  suffix = suffix || '';
+  const wrap = document.getElementById(suffix ? 'saksliste-items-'+suffix : 'saksliste-items');
   if(!wrap) return;
   wrap.innerHTML = '<div style="font-size:12px;color:var(--text3);">Laster…</div>';
   const items = await api('getSaksliste') || [];
@@ -2038,25 +2048,26 @@ async function loadSaksliste(){
   wrap.innerHTML = items.map(it => `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--bg);border:0.5px solid var(--gold-b);border-radius:6px;padding:8px 12px;">
       <div style="font-size:13px;color:var(--text2);line-height:1.5;white-space:pre-wrap;">${escapeHtml(it.tekst)}</div>
-      <button onclick="removeSakslisteItem('${it.id}')" title="Fjern" style="flex-shrink:0;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
+      <button onclick="removeSakslisteItem('${it.id}','${suffix}')" title="Fjern" style="flex-shrink:0;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
     </div>
   `).join('');
 }
 
-async function addSakslisteItem(){
-  const input = document.getElementById('saksliste-input');
+async function addSakslisteItem(suffix){
+  suffix = suffix || '';
+  const input = document.getElementById(suffix ? 'saksliste-input-'+suffix : 'saksliste-input');
   const tekst = (input.value || '').trim();
   if(!tekst) return;
   input.disabled = true;
   await api('saveSakslisteItem', {tekst});
   input.value = '';
   input.disabled = false;
-  loadSaksliste();
+  loadSaksliste(suffix);
 }
 
-async function removeSakslisteItem(id){
+async function removeSakslisteItem(id, suffix){
   await api('deleteSakslisteItem', {id});
-  loadSaksliste();
+  loadSaksliste(suffix);
 }
 
 async function initPublicView(){
