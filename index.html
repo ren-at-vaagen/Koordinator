@@ -381,12 +381,12 @@ const HENDELSE_ID = params.get('hendelseId') || params.get('arrangementId');
       </div>
       <button onclick="toggleTheme()" style="flex-shrink:0;margin-top:4px;background:transparent;border:0.5px solid var(--border2);border-radius:20px;padding:5px 12px;color:var(--text3);font-family:var(--font-m);font-size:11px;cursor:pointer;">☀/🌙</button>
     </div>
-    <div id="sakliste-box" style="border:1.5px solid var(--gold-b);background:var(--gold-bg);border-radius:var(--radius,8px);padding:16px 18px;margin-bottom:24px;">
-      <div style="font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Gjeldende sakliste til dramateam møtet</div>
-      <div id="sakliste-items" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+    <div id="saksliste-box" style="border:1.5px solid var(--gold-b);background:var(--gold-bg);border-radius:var(--radius,8px);padding:16px 18px;margin-bottom:24px;">
+      <div style="font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Gjeldende saksliste til dramateam møtet</div>
+      <div id="saksliste-items" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
       <div style="display:flex;gap:8px;">
-        <input class="form-input" id="sakliste-input" placeholder="Legg til sak…" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter') addSaklisteItem();">
-        <button class="btn btn-primary" onclick="addSaklisteItem()">Legg til</button>
+        <input class="form-input" id="saksliste-input" placeholder="Legg til sak…" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter') addSakslisteItem();">
+        <button class="btn btn-primary" onclick="addSakslisteItem()">Legg til</button>
       </div>
     </div>
     <div id="public-list"></div>
@@ -2026,11 +2026,11 @@ function escapeHtml(s){
   return d.innerHTML;
 }
 
-async function loadSakliste(){
-  const wrap = document.getElementById('sakliste-items');
+async function loadSaksliste(){
+  const wrap = document.getElementById('saksliste-items');
   if(!wrap) return;
   wrap.innerHTML = '<div style="font-size:12px;color:var(--text3);">Laster…</div>';
-  const items = await api('getSakliste') || [];
+  const items = await api('getSaksliste') || [];
   if(!items.length){
     wrap.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;">Ingen saker foreløpig.</div>';
     return;
@@ -2038,30 +2038,30 @@ async function loadSakliste(){
   wrap.innerHTML = items.map(it => `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--bg);border:0.5px solid var(--gold-b);border-radius:6px;padding:8px 12px;">
       <div style="font-size:13px;color:var(--text2);line-height:1.5;white-space:pre-wrap;">${escapeHtml(it.tekst)}</div>
-      <button onclick="removeSaklisteItem('${it.id}')" title="Fjern" style="flex-shrink:0;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
+      <button onclick="removeSakslisteItem('${it.id}')" title="Fjern" style="flex-shrink:0;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
     </div>
   `).join('');
 }
 
-async function addSaklisteItem(){
-  const input = document.getElementById('sakliste-input');
+async function addSakslisteItem(){
+  const input = document.getElementById('saksliste-input');
   const tekst = (input.value || '').trim();
   if(!tekst) return;
   input.disabled = true;
-  await api('saveSaklisteItem', {tekst});
+  await api('saveSakslisteItem', {tekst});
   input.value = '';
   input.disabled = false;
-  loadSakliste();
+  loadSaksliste();
 }
 
-async function removeSaklisteItem(id){
-  await api('deleteSaklisteItem', {id});
-  loadSakliste();
+async function removeSakslisteItem(id){
+  await api('deleteSakslisteItem', {id});
+  loadSaksliste();
 }
 
 async function initPublicView(){
   document.getElementById('public-view').style.display='block';
-  loadSakliste();
+  loadSaksliste();
   const arrangements = await api('getArrangement') || [];
   const today = new Date().toISOString().slice(0,10);
   const open = arrangements
